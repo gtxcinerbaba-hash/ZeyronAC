@@ -1,0 +1,274 @@
+# ╔═══════════════════════════════════════════════════════════════════════════════╗
+# ║                           ZeyronAC Configuration                                 ║
+# ║                    ML Anti-Cheat with AI Detection                            ║
+# ╚═══════════════════════════════════════════════════════════════════════════════╝
+
+# Schema marker — when a user's config has a different value the plugin runs a one-time wipe
+# migration (preserving detection.api-key, detection.enabled, penalties.actions). Do not edit.
+_schema-version: 'b48'
+
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                            GENERAL SETTINGS                                   │
+# └───────────────────────────────────────────────────────────────────────────────┘
+
+# Enable debug mode for additional console output
+debug: false
+
+# Directory for saving data files
+outputDirectory: "data"
+
+# Automatic stable updates.
+# The plugin checks ZeyronAC backend every 5 minutes and downloads the correct Java 17/21 build into plugins/update.
+# Restart the server to apply a downloaded update.
+updates:
+  enabled: false
+
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                            DETECTION SETTINGS                                 │
+# └───────────────────────────────────────────────────────────────────────────────┘
+detection:
+  # Enable AI-based cheat detection 
+  enabled: true # DONT FORGET TO TURN ON (enabled: true) <---
+  
+  # AI server endpoint
+  endpoint: "https://api.zeyronac.com"
+  
+  # API key for authentication
+  # To buy API key visit https://zeyronac.com
+  api-key: "your-api-key"
+
+  # Number of ticks to collect per sample
+  # Do not change unless you know what you are doing
+  sample-size: 40 # Do not change!
+  
+  # Interval between samples (in ticks)
+  # Do not change unless you know what you are doing
+  sample-interval: 10 # Do not change!
+  
+  # WorldGuard integration for region-based AI check bypass.
+  # Priority system: If player is in multiple regions, the highest priority region
+  # determines if AI check is disabled.
+  # Example: Player in "spawn" (priority 0) and "pvp" (priority 10)
+  # If "spawn" is disabled but "pvp" is not - AI check WILL run (pvp has higher priority)
+  worldguard:
+    # Enable WorldGuard region checking?
+    enabled: true
+    # List of regions where AI check is disabled.
+    # Format: "world:region" or just "region" (applies to all worlds)
+    disabled-regions:
+      - "spawn:spawn"
+  
+  # Model settings
+  # Each model can have:
+  #   name: Display name shown in alerts
+  #   only-alert: When true, alerts are sent but NO punishments for this model
+  models:
+    fast:
+      name: "Fast"
+      only-alert: false # Stable model - punishments enabled
+    pro:
+      name: "Pro"
+      only-alert: false # Newest model - punishments enabled
+    ultra:
+      name: "Ultra"
+      only-alert: false # Model in development - testing mode - no punishments
+    experimental:
+      name: "Experimental" # You can change colors but change names is necessary
+      only-alert: true  # Test model- testing mode - no punishments
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                              ALERT SETTINGS                                   │
+# └───────────────────────────────────────────────────────────────────────────────┘
+# Guide https://zeyronac.com/wiki
+server-identity:
+  # Unique server name for cross-server alerts and duplicate-name warnings.
+  name: "default"
+  # Family/group for inter-server exchange. Only servers with the same family share alerts/actions.
+  # Example: set every KingMC mode to "KingMC" so it does not receive events from other networks on the same key.
+  family: "default"
+  interserver:
+    # Adds the server name to inter-server alert/action messages.
+    enabled: false
+  reporting:
+    # Sends alerts above alert-threshold and punish actions to the ZeyronAC API.
+    # Required for dashboard event history, Redis event storage, Discord webhooks, and Telegram webhooks.
+    events-enabled: true
+    # Minimum model probability for sending alert events to the API.
+    alert-threshold: 0.80
+alerts:
+  # Probability threshold for sending alerts (0.0 - 1.0) - lowered for early notification
+  threshold: 0.80
+  
+  # Send alerts to console
+  console: false
+  
+  # Sound settings for alerts
+  sound:
+    # Enable sound on alerts
+    enabled: true
+    # Sound to play (Minecraft sound name)
+    # Examples: BLOCK_NOTE_BLOCK_PLING, ENTITY_EXPERIENCE_ORB_PICKUP, BLOCK_ANVIL_LAND
+    type: "BLOCK_NOTE_BLOCK_PLING"
+    # Volume (0.0 - 1.0)
+    volume: 1.0
+    # Pitch (0.5 - 2.0)
+    pitch: 1.0
+
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                            VIOLATION SETTINGS                                 │
+# └───────────────────────────────────────────────────────────────────────────────┘
+# Guide https://zeyronac.com/wiki
+violation:
+  # VL threshold for triggering penalties (1 = immediate penalty on first detection)
+  threshold: 40
+  
+  # VL reset value after penalty (0 = full reset)
+  # reset-value is should be /2 of threshold
+  reset-value: 20  
+  # Buffer increase multiplier: (probability - threshold) * multiplier
+  # Example: prob 1.я0 with threshold 0.70 = (1.0 - 0.70) * 33.33 = 10 buffer
+  multiplier: 45.0
+  
+  # Buffer decay settings
+  decay:
+    # Buffer decay applies when probability is below this value
+    threshold: 0.50
+    # Maximum buffer removed, reached at probability 0. Decay scales linearly: 0 at `threshold`
+    # up to `amount` at probability 0 - the more confident the model is that the player is legit
+    # (lower probability), the more buffer is cleared. (Buffer gain is unchanged: it still grows
+    # above the alert threshold.)
+    amount: 1.5
+  # VL decay settings (reset VL when player is not in combat)
+  # Protects legitimate players from random false positives
+  vl-decay:
+    # Enable automatic VL decay
+    enabled: false
+    # Check interval in seconds (how often to check and reduce VL)
+    interval: 1500
+    # Amount of VL to reduce per interval
+    amount: 1
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                            PENALTY SETTINGS                                   │
+# └───────────────────────────────────────────────────────────────────────────────┘
+# 
+# Available action prefixes:
+#   {ANIMATION}    - Execute animation before command
+#   {CUSTOM_ALERT} - Send custom alert to moderators
+#   (no prefix)    - Execute raw command
+#
+# Legacy support: {BAN} and {KICK} prefixes still work as {ANIMATION} for backward compatibility
+#
+# Available placeholders:
+#   {PLAYER}      - Player name
+#   {VL}          - Violation level
+#   {PROBABILITY} - Detection probability
+#   {BUFFER}      - Buffer value
+#
+# Legacy placeholders also supported: <player>, <vl>, <probability>, <buffer>
+#
+penalties:
+  # Ban animation settings
+  # New data-driven animation engine with multiple presets and YAML customization
+  animation:
+    # Enable ban animations
+    enabled: true
+    
+    # Animation type to use:
+    # Built-in presets:
+    #   - classic: Classic levitation with sphere (default, 80 ticks / 4 seconds)
+    #   - fire: Dramatic fire spiral and explosion (100 ticks / 5 seconds)
+    #   - ender: Mystical ender portal effect (90 ticks / 4.5 seconds)
+    #   - rainbow: Colorful rainbow spirals (100 ticks / 5 seconds)
+    #   - dramatic: Complex multi-stage with sounds (120 ticks / 6 seconds)
+    #   - ultimate: Full feature showcase (140 ticks / 7 seconds)
+    # Custom animations:
+    #   - Use filename from plugins/ZeyronAC/animations/ folder (without .yml)
+    #   - Example: "my_custom" will load "my_custom.yml"
+    type: "classic_ban"
+  
+  # Actions by violation level
+  # Aggressive system: alert -> kick -> ban
+  actions:
+    1: "kick {PLAYER} ZeyronAC Detection (VL:{VL})"
+    2: "{ANIMATION} ban {PLAYER} Cheating (ZeyronAC VL:{VL})"
+#
+#  Also you could use  1: "{CUSTOM_ALERT} &c{PLAYER} &7is suspicious &8(&fVL:&e{VL}&8, &fProb:&e{PROBABILITY}&8)"
+
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                      ALERT RESPONSE / TROLL SYSTEM                            │
+# └───────────────────────────────────────────────────────────────────────────────┘
+# All triggers are driven by the violation buffer (see violation.threshold).
+# Each threshold fires exactly once per upward crossing; rearms after the buffer drops below.
+alert-responses:
+  enabled: true # Master switch for ALL alert responses (alerts + damage-reduction + troll)
+
+  alerts:
+    # Chat alert step as a fraction of violation.threshold.
+    # 0.33 → alert at 33%, 66%, 99% of the flag buffer. Range: (0, 1].
+    # A separate alert still fires when VL increments (see alert-format-vl in messages.yml).
+    buffer-step-percent: 0.33
+
+  damage-reduction:
+    enabled: true # Reduce the flagged player's outgoing damage. Independent of the troll system.
+    # `buffer` is the absolute buffer value that activates the stage (compare with violation.threshold).
+    stages:
+      - buffer: 10.0
+        reduction-percent: 5
+        duration-seconds: 8
+      - buffer: 20.0
+        reduction-percent: 35
+        duration-seconds: 12
+      - buffer: 30.0
+        reduction-percent: 70
+        duration-seconds: 16
+
+  troll:
+    enabled: false # Toggle the troll actions independently of damage-reduction.
+    # Each action: type (shuffle_inventory | drop_weapon | launch), buffer (absolute trigger value),
+    # cooldown-seconds, message ({PLAYER}/{BUFFER}/{PROBABILITY}). drop_weapon & launch also use
+    # only-sword, horizontal-velocity, vertical-velocity. {DETECTIONS} is kept as alias for {BUFFER}.
+    actions:
+      - type: "shuffle_inventory"
+        buffer: 20.0
+        cooldown-seconds: 20
+        message: "&#F1F1F1▍ &#D8D8D8Z&#BFBFBFY&#A6A6A6R&#8D8D8DA&#747474C &f{PLAYER} &7Forced to shuffle his inventory at &#EE1955(&#EE1955B&#E81750u&#E2154Bf&#DC1245f&#D61040e&#CF0E3Br: &f{BUFFER}&#EE1955)&f"
+      - type: "drop_weapon"
+        buffer: 35.0
+        cooldown-seconds: 20
+        only-sword: true
+        horizontal-velocity: 1.9
+        vertical-velocity: 0.55
+        message: "&#F1F1F1▍ &#D8D8D8Z&#BFBFBFY&#A6A6A6R&#8D8D8DA&#747474C &f{PLAYER} &7Forced to drop his weapon at &#EE1955(&#EE1955B&#E81750u&#E2154Bf&#DC1245f&#D61040e&#CF0E3Br: &f{BUFFER}&#EE1955)&f"
+      # Example extra action (disabled by a high buffer threshold by default): fling the cheater backwards.
+      - type: "launch"
+        buffer: 45.0
+        cooldown-seconds: 15
+        horizontal-velocity: 1.2
+        vertical-velocity: 0.6
+        message: "&c{PLAYER} &7was launched at buffer &f{BUFFER}&7."
+
+# ┌───────────────────────────────────────────────────────────────────────────────┐
+# │                            FOLIA SETTINGS                                     │
+# └───────────────────────────────────────────────────────────────────────────────┘
+#
+# These settings are only used when running on a Folia server.
+# On Bukkit/Paper/Spigot/kSpigot servers, these settings are ignored.
+#
+
+folia:
+  # Enable Folia-specific optimizations
+  # When disabled, the plugin will use standard Bukkit scheduler even on Folia
+  enabled: true # Do not change!
+  
+  # Thread pool size for async tasks (0 = use Folia default)
+  thread-pool-size: 0 # Do not change!
+  
+  # Entity scheduler settings
+  # Use entity-specific schedulers for entity-related tasks
+  entity-scheduler: # Do not change!
+    enabled: true
+  
+  # Region scheduler settings
+  # Use region-specific schedulers for location-based tasks
+  region-scheduler: # Do not change!
+    enabled: true
+

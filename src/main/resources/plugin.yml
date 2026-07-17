@@ -1,0 +1,44 @@
+name: ZeyronAC
+version: '${version}'
+main: com.zeyronac.Main
+api-version: '1.16'
+description: "ZeyronAC.com - AI Anticheat"
+folia-supported: true
+
+commands:
+  zeyronac:
+    description: ZeyronAC anticheat and data collection commands
+    usage: |
+      /zeyronac start <NICK> <CHEAT|LEGIT|UNLABELED> "<comment>"
+      /zeyronac stop <NICK>
+      /zeyronac alerts - Toggle alerts
+      /zeyronac prob <player> - Show player probability
+      /zeyronac reload - Reload config
+      /zeyronac reinstall - Add missing fields to config, messages, menu, and holograms
+      /zeyronac falsepositive restore <player> - Export 5,000 ticks to CSV
+      /zeyronac suspects - Open the suspects GUI
+      /zeyronac punish <player> - Execute max punishment
+      /zeyronac profile <player> - View player profile
+      /zeyronac kicklist - View kick history
+      /zeyronac punish <player> - Execute max punishment
+    permission: zeyronac.admin
+    aliases: [zr, zron]
+
+permissions:
+  zeyronac.admin:
+    description: Allows use of all ZeyronAC commands
+    default: op
+    children:
+      zeyronac.alerts: true
+      zeyronac.prob: true
+      zeyronac.reload: true
+      zeyronac.collect: true
+  zeyronac.alerts:
+    description: Allows toggling AI alerts
+    default: op
+  zeyronac.prob:
+    description: Allows probability tracking
+    default: op
+  zeyronac.reload:
+    description: Allows config reload
+    default: op

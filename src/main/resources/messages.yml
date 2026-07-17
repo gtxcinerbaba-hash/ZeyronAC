@@ -1,0 +1,81 @@
+prefix: '&#F1F1F1▍ &#D8D8D8M&#BFBFBFL&#A6A6A6S&#8D8D8DA&#747474C &r'
+
+alerts-enabled: '&fAlerts &aenabled'
+alerts-disabled: '&fAlerts &cdisabled'
+monitor-enabled: '&fMonitor mode &aenabled &7| all detections shown'
+monitor-disabled: '&fMonitor mode &cdisabled'
+monitor-format: '&#F1F1F1▍ &#D8D8D8M&#BFBFBFL&#A6A6A6S&#8D8D8DA&#747474C &r&#81FFC2[{MODEL}]&f &f{PLAYER} &7- {PROBABILITY_COLORED}'
+# Local alert shown on the server where the violation was detected.
+# Optional placeholder: {STEP_PERCENT} — when the alert is fired from a buffer-step crossing
+# (alert-responses.alerts.buffer-step-percent), resolves to 33/66/99/...; empty otherwise.
+alert-format: '&#81FFC2[{MODEL}]&f &f{PLAYER} &7Failed check &#E5396A(&#E5396AA&#E6366Ai&#E7346Am&#E83169-&#E92F69A&#EA2C69i: &f{PROBABILITY}&#E5396A)&f
+  &#E5396A(&#E5396AB&#E6366Au&#E7346Af&#E83169f&#E92F69e&#EA2C69r: &f{BUFFER}&#E5396A)&f'
+alert-format-vl: '&f{PLAYER} &7Got VL &#E5396A(&#E5396AVL:&f{VL}&#E5396A) &#E5396A(&#E5396AB&#E6366Au&#E7346Af&#E83169f&#E92F69e&#EA2C69r: &f{BUFFER}&#E5396A)'
+# Alert received from another server through inter-server mode.
+interserver-alert-format: '&#81FFC2[{MODEL}]&f &#1E9F9A[Cross-server: &#19EEE6{SERVER}&#1E9F9A] &f{PLAYER} &7Failed check &#E5396A(&#E5396AA&#E6366Ai&#E7346Am&#E83169-&#E92F69A&#EA2C69i: &f{PROBABILITY}&#E5396A)&f
+  &#E5396A(&#E5396AB&#E6366Au&#E7346Af&#E83169f&#E92F69e&#EA2C69r: &f{BUFFER}&#E5396A)&f'
+unknown-command: '&cUnknown command: &f{ARGS}'
+players-only: '&cThis command is for players only'
+no-permission: '&cYou don''t have permission'
+player-not-found: '&cPlayer not found: &f{PLAYER}'
+config-reloaded: '&aConfiguration reloaded'
+
+tracking-stopped: '&cTracking stopped &7| use /zeyronac prob to track'
+tracking-started: '&aTracking &f{PLAYER} &7| use /zeyronac prob to stop'
+prob-usage: '&fUsage: &7/zeyronac prob <player>'
+player-offline: '&cPlayer is offline'
+falsepositive-success: '&aTicks restored at &frestored_data/'
+falsepositive-fail: '&cCan''t save, some errors'
+falsepositive-usage: '&fUsage: &7/zeyronac falsepositive restore <player>'
+falsepositive-no-data: '&cCan''t save, no buffer before'
+
+actionbar-format: '&f&l● {MODEL}% &7| {STATUS} {BUFFER} &7| &bvl {VL}'
+# {STATUS} arrow shown in the actionbar: UP when the buffer is rising, DOWN when falling.
+STATUS_UP: '&e▲'
+STATUS_DOWN: '&e▼'
+
+data-status-header: '&f&l● Data Status ●'
+active-sessions: '&fActive sessions: &a{COUNT}'
+no-active-sessions: '&cNo active sessions'
+start-hint: '&7Use /zeyronac start <NICK|GLOBAL> <CHEAT|LEGIT>'
+session-started: '&aStarted &f{LABEL} &asession for &f{COUNT} &aplayer(s)'
+session-stopped: '&cStopped session for &f{PLAYER}'
+all-sessions-stopped: '&cStopped &f{COUNT} &csessions'
+no-sessions-to-stop: '&cNo active sessions'
+no-players-online: '&cNo players online'
+invalid-label: '&cInvalid label: &f{LABEL}'
+valid-labels: '&7Available: &aCHEAT, LEGIT'
+
+kicklist-header: '&f&l● Last Kicks &7({PAGE}/{MAX_PAGE}) ●'
+kicklist-footer: '&7Use /zeyronac kicklist {NEXT_PAGE} for next'
+kicklist-empty: '&cList is empty'
+
+usage-header: '&f&l● Commands ●'
+usage-start: '&7/zeyronac start <NICK|GLOBAL> <CHEAT|LEGIT> "<comment>"'
+usage-stop: '&7/zeyronac stop <NICK|GLOBAL>'
+usage-alerts: '&7/zeyronac alerts'
+usage-prob: '&7/zeyronac prob <player>'
+usage-datastatus: '&7/zeyronac datastatus'
+usage-reload: '&7/zeyronac reload'
+usage-suspects: '&7/zeyronac suspects'
+usage-punish: '&7/zeyronac punish <player> [confirm]'
+usage-profile: '&7/zeyronac profile <player>'
+usage-kicklist: '&7/zeyronac kicklist [page]'
+usage-falsepositive: '&7/zeyronac falsepositive restore <player>'
+usage-status: '&7/zeyronac status'
+
+suspects-teleport: '&aTeleported to &f{PLAYER}'
+suspects-teleport-spectator: '&aTeleported to &f{PLAYER} &7(Spectator)'
+suspects-player-offline: '&cPlayer offline'
+suspects-invalid-action: '&cInvalid action: &f{ACTION}'
+
+punish-success: '&aPunished &f{PLAYER} &7({ACTION})'
+punish-no-action: '&cNo punishment actions'
+punish-no-evidence: '&c{PLAYER} has no detections &7(VL, buffer and detection count are all zero) &c- punishment cancelled'
+punish-confirm-hint: '&7Use &f/zeyronac punish {PLAYER} confirm &7to punish anyway'
+
+profile-header: '&f&l● Profile: &f{PLAYER} &f&l●'
+profile-info:
+- '&7Sens: &f{SENS}%'
+- '&7Client: &f{CLIENT}'
+- '&7Detections (>80%): &f{DETECTIONS}'
