@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.penalty.engine;
@@ -34,220 +34,220 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Data-driven конфигурация для анимаций бана.
- * Поддерживает параллельные стейджи, кастомные цвета частиц и звуковые эффекты.
+ * Data-driven configuration for ban animations.
+ * Supports parallel stages, custom particle colors and sound effects.
  */
 public class BanAnimationConfig {
-    /** Общая длительность анимации в тиках (20 тиков = 1 секунда) */
+    /** Total animation duration in ticks (20 ticks = 1 second) */
     public int totalTicks = 80;
     
-    /** Замораживать ли игрока (Slowness, Jump Boost, Levitation) */
+    /** Whether to freeze the player (Slowness, Jump Boost, Levitation) */
     public boolean freezePlayer = true;
     
-    /** Бить ли молнией в конце анимации */
+    /** Whether to strike lightning at the end of the animation */
     public boolean strikeLightningAtEnd = true;
     
-    /** Раздеть игрока (снять броню и выкинуть предметы) */
+    /** Strip the player (remove armor and drop items) */
     public boolean stripPlayer = false;
     
-    /** Интервал выкидывания предметов в тиках */
+    /** Item drop interval in ticks */
     public int itemDropIntervalTicks = 5;
     
-    /** Кастомная левитация (если -1, используется стандартная) */
+    /** Custom levitation (if -1, standard is used) */
     public int customLevitationAmplifier = -1;
     
-    /** Кастомное перемещение игрока */
+    /** Custom player movement */
     public MovementConfig movement = null;
     
-    /** Список стейджей анимации (могут выполняться параллельно) */
+    /** List of animation stages (can run in parallel) */
     public List<StageConfig> stages = new ArrayList<>();
     
     /**
-     * Конфигурация перемещения игрока в пространстве.
+     * Configuration for player movement in space.
      */
     public static class MovementConfig {
-        /** Начальный тик перемещения */
+        /** Start tick of movement */
         public int startTick = 0;
         
-        /** Конечный тик перемещения */
+        /** End tick of movement */
         public int endTick = 0;
         
-        /** Смещение по X */
+        /** X offset */
         public double offsetX = 0.0;
         
-        /** Смещение по Y */
+        /** Y offset */
         public double offsetY = 0.0;
         
-        /** Смещение по Z */
+        /** Z offset */
         public double offsetZ = 0.0;
         
-        /** Плавное перемещение (интерполяция) */
+        /** Smooth movement (interpolation) */
         public boolean smooth = true;
     }
 
     /**
-     * Конфигурация одного стейджа анимации.
-     * Стейджи могут пересекаться по времени для создания сложных эффектов.
+     * Configuration of a single animation stage.
+     * Stages can overlap in time to create complex effects.
      */
     public static class StageConfig {
-        /** Название стейджа (для отладки) */
+        /** Stage name (for debugging) */
         public String name = "Unnamed Stage";
         
-        /** Начальный тик стейджа (включительно) */
+        /** Start tick of the stage (inclusive) */
         public int startTick = 0;
         
-        /** Конечный тик стейджа (включительно) */
+        /** End tick of the stage (inclusive) */
         public int endTick = 0;
         
-        /** Список эффектов частиц в этом стейдже */
+        /** List of particle effects in this stage */
         public List<ParticleEffectConfig> particles = new ArrayList<>();
         
-        /** Список звуковых эффектов в этом стейдже */
+        /** List of sound effects in this stage */
         public List<SoundEffectConfig> sounds = new ArrayList<>();
         
-        /** Список тайтлов в этом стейдже */
+        /** List of titles in this stage */
         public List<TitleConfig> titles = new ArrayList<>();
         
-        /** Ударить молнией на определенном тике стейджа */
+        /** Strike lightning at a specific tick of the stage */
         public List<Integer> lightningTicks = new ArrayList<>();
         
-        /** След из частиц за игроком */
+        /** Particle trail behind the player */
         public ParticleTrailConfig particleTrail = null;
     }
 
     /**
-     * Конфигурация эффекта частиц с поддержкой цветов и трансформаций.
+     * Configuration of particle effect with color and transform support.
      */
     public static class ParticleEffectConfig {
-        /** Тип частицы (Bukkit Particle enum) */
+        /** Particle type (Bukkit Particle enum) */
         public Particle particleType = Particle.FLAME;
         
-        /** Форма эффекта: POINT, RISING_SPIRAL, SPHERE, EXPLOSION, HELIX, CIRCLE */
+        /** Effect shape: POINT, RISING_SPIRAL, SPHERE, EXPLOSION, HELIX, CIRCLE */
         public String shape = "POINT";
         
-        /** Интервал между спавном частиц (в тиках) */
+        /** Interval between particle spawns (in ticks) */
         public int intervalTicks = 1;
         
-        /** Количество частиц за один спавн */
+        /** Number of particles per spawn */
         public int count = 1;
 
-        // === ТРАНСФОРМАЦИИ (линейная интерполяция от start к end) ===
-        /** Начальный радиус эффекта */
+        // === TRANSFORMS (linear interpolation from start to end) ===
+        /** Start radius of the effect */
         public double radiusStart = 1.0;
         
-        /** Конечный радиус эффекта */
+        /** End radius of the effect */
         public double radiusEnd = 1.0;
         
-        /** Начальное смещение по высоте */
+        /** Start height offset */
         public double heightOffsetStart = 0.0;
         
-        /** Конечное смещение по высоте */
+        /** End height offset */
         public double heightOffsetEnd = 0.0;
 
-        // === ЦВЕТ И РАЗМЕР ===
-        /** Использовать ли кастомный цвет (для REDSTONE/DUST частиц) */
+        // === COLOR AND SIZE ===
+        /** Whether to use custom color (for REDSTONE/DUST particles) */
         public boolean isColored = false;
         
-        /** Красный компонент цвета (0-255) */
+        /** Red color component (0-255) */
         public int red = 255;
         
-        /** Зеленый компонент цвета (0-255) */
+        /** Green color component (0-255) */
         public int green = 255;
         
-        /** Синий компонент цвета (0-255) */
+        /** Blue color component (0-255) */
         public int blue = 255;
         
-        /** Размер частицы (для DUST частиц) */
+        /** Particle size (for DUST particles) */
         public float particleSize = 1.0f;
         
-        /** Скорость частиц */
+        /** Particle speed */
         public double speed = 0.0;
         
-        /** Разброс частиц по X */
+        /** Particle spread on X */
         public double offsetX = 0.0;
         
-        /** Разброс частиц по Y */
+        /** Particle spread on Y */
         public double offsetY = 0.0;
         
-        /** Разброс частиц по Z */
+        /** Particle spread on Z */
         public double offsetZ = 0.0;
     }
 
     /**
-     * Конфигурация звукового эффекта с поддержкой зацикливания.
+     * Configuration of sound effect with looping support.
      */
     public static class SoundEffectConfig {
-        /** Тип звука (Bukkit Sound enum) */
+        /** Sound type (Bukkit Sound enum) */
         public Sound soundType = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
         
-        /** Тик воспроизведения относительно начала стейджа */
+        /** Playback tick relative to stage start */
         public int playAtTick = 0;
         
-        /** Громкость звука */
+        /** Sound volume */
         public float volume = 1.0f;
         
-        /** Высота тона звука */
+        /** Sound pitch */
         public float pitch = 1.0f;
         
-        /** Зацикливать ли звук */
+        /** Whether to loop the sound */
         public boolean loop = false;
         
-        /** Интервал зацикливания (в тиках) */
+        /** Loop interval (in ticks) */
         public int loopIntervalTicks = 20;
     }
     
     /**
-     * Конфигурация тайтла на экране игрока.
+     * Configuration of title on the player's screen.
      */
     public static class TitleConfig {
-        /** Тик показа тайтла относительно начала стейджа */
+        /** Title show tick relative to stage start */
         public int showAtTick = 0;
         
-        /** Заголовок (title) */
+        /** Title */
         public String title = "";
         
-        /** Подзаголовок (subtitle) */
+        /** Subtitle */
         public String subtitle = "";
         
-        /** Время появления (в тиках) */
+        /** Fade-in time (in ticks) */
         public int fadeIn = 10;
         
-        /** Время показа (в тиках) */
+        /** Display time (in ticks) */
         public int stay = 40;
         
-        /** Время исчезновения (в тиках) */
+        /** Fade-out time (in ticks) */
         public int fadeOut = 10;
     }
     
     /**
-     * Конфигурация следа из частиц за игроком.
+     * Configuration of particle trail behind the player.
      */
     public static class ParticleTrailConfig {
-        /** Тип частицы */
+        /** Particle type */
         public Particle particleType = Particle.FLAME;
         
-        /** Интервал спавна частиц (в тиках) */
+        /** Particle spawn interval (in ticks) */
         public int intervalTicks = 2;
         
-        /** Количество частиц за один спавн */
+        /** Number of particles per spawn */
         public int count = 3;
         
-        /** Использовать кастомный цвет */
+        /** Use custom color */
         public boolean isColored = false;
         
-        /** Красный компонент цвета (0-255) */
+        /** Red color component (0-255) */
         public int red = 255;
         
-        /** Зеленый компонент цвета (0-255) */
+        /** Green color component (0-255) */
         public int green = 255;
         
-        /** Синий компонент цвета (0-255) */
+        /** Blue color component (0-255) */
         public int blue = 255;
         
-        /** Размер частицы */
+        /** Particle size */
         public float particleSize = 1.0f;
         
-        /** Разброс частиц */
+        /** Particle spread */
         public double offsetX = 0.2;
         public double offsetY = 0.2;
         public double offsetZ = 0.2;

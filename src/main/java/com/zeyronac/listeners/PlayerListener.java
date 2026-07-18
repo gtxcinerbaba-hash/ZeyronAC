@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.listeners;
@@ -94,6 +94,11 @@ public class PlayerListener implements Listener {
             tickListener.startPlayerTask(player);
         }
 
+        // Disconnect sonrasi geri sayim icinde bekleyen aktif kayit varsa resume et.
+        if (sessionManager != null) {
+            sessionManager.resumeSession(player);
+        }
+
         try {
             SchedulerManager.getAdapter().runEntitySyncDelayed(player, () -> {
                 if (player.isOnline()) {
@@ -153,7 +158,9 @@ public class PlayerListener implements Listener {
             plugin.getDetectionResponseManager().handlePlayerQuit(player);
         }
         if (sessionManager != null) {
-            sessionManager.removeAimProcessor(player.getUniqueId());
+            // Aktif kayit varsa 5 dakikalik geri sayim baslatir;
+            // yoksa sadece aimProcessor'u temizler.
+            sessionManager.handlePlayerDisconnect(player);
         }
         if (hologramManager != null) {
             hologramManager.handleQuit(player);

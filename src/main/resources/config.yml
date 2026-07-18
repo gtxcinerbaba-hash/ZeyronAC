@@ -65,13 +65,13 @@ detection:
   models:
     fast:
       name: "Fast"
-      only-alert: false # Stable model - punishments enabled
+      only-alert: true # Stable model - punishments enabled
     pro:
       name: "Pro"
-      only-alert: false # Newest model - punishments enabled
+      only-alert: true # Newest model - punishments enabled
     ultra:
       name: "Ultra"
-      only-alert: false # Model in development - testing mode - no punishments
+      only-alert: true # Model in development - testing mode - no punishments
     experimental:
       name: "Experimental" # You can change colors but change names is necessary
       only-alert: true  # Test model- testing mode - no punishments
@@ -125,7 +125,7 @@ violation:
   # reset-value is should be /2 of threshold
   reset-value: 20  
   # Buffer increase multiplier: (probability - threshold) * multiplier
-  # Example: prob 1.я0 with threshold 0.70 = (1.0 - 0.70) * 33.33 = 10 buffer
+  # Example: prob 1.0 with threshold 0.70 = (1.0 - 0.70) * 33.33 = 10 buffer
   multiplier: 45.0
   
   # Buffer decay settings
@@ -188,8 +188,7 @@ penalties:
   # Actions by violation level
   # Aggressive system: alert -> kick -> ban
   actions:
-    1: "kick {PLAYER} ZeyronAC Detection (VL:{VL})"
-    2: "{ANIMATION} ban {PLAYER} Cheating (ZeyronAC VL:{VL})"
+    1: ""
 #
 #  Also you could use  1: "{CUSTOM_ALERT} &c{PLAYER} &7is suspicious &8(&fVL:&e{VL}&8, &fProb:&e{PROBABILITY}&8)"
 

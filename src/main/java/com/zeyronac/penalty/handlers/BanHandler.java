@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.penalty.handlers;
@@ -41,13 +41,13 @@ import com.zeyronac.scheduler.SchedulerManager;
 
 public class BanHandler implements ActionHandler {
     private final Main plugin;
-    private final BanAnimation legacyAnimation; // Fallback для случаев когда AnimationManager недоступен
+    private final BanAnimation legacyAnimation; // Fallback for cases when AnimationManager is unavailable
     private boolean animationEnabled = true;
 
     public BanHandler(JavaPlugin plugin) {
         this.plugin = (Main) plugin;
-        // Создаем legacy анимацию как fallback
-        this.legacyAnimation = new BanAnimation(plugin, false); // false = не использовать новый движок в legacy
+        // Create legacy animation as fallback
+        this.legacyAnimation = new BanAnimation(plugin, false); // false = do not use new engine in legacy
     }
 
     @Override
@@ -62,35 +62,35 @@ public class BanHandler implements ActionHandler {
         }
         
         if (animationEnabled && player != null && player.isOnline()) {
-            // Пытаемся использовать новый AnimationManager
+            // Try to use the new AnimationManager
             AnimationManager animationManager = plugin.getAnimationManager();
             
             if (animationManager != null) {
-                // Получаем название анимации из конфигурации
+                // Get animation name from configuration
                 String animationType = plugin.getPluginConfig().getAnimationType();
                 if (animationType == null || animationType.isEmpty()) {
-                    animationType = "classic_ban"; // Fallback на classic_ban
+                    animationType = "classic_ban"; // Fallback to classic_ban
                 }
                 
                 plugin.getLogger().info("Using AnimationManager to play animation: " + animationType);
                 
-                // Используем новый AnimationManager
+                // Use the new AnimationManager
                 boolean success = animationManager.playAnimation(player, animationType, command);
                 
                 if (!success) {
                     plugin.getLogger().warning("Failed to play animation " + animationType + ", falling back to direct command execution");
-                    // Если анимация не удалась, выполняем команду напрямую
+                    // If animation failed, execute command directly
                     SchedulerManager.getAdapter().runSync(() -> {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
                     });
                 }
             } else {
                 plugin.getLogger().warning("AnimationManager not available, using legacy animation");
-                // Fallback на старую анимацию
+                // Fallback to legacy animation
                 legacyAnimation.playAnimation(player, command, context);
             }
         } else {
-            // Анимации отключены или игрок не онлайн - выполняем команду напрямую
+            // Animations disabled or player not online - execute command directly
             SchedulerManager.getAdapter().runSync(() -> {
                 Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
             });

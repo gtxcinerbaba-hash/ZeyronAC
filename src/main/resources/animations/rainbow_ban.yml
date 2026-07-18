@@ -1,6 +1,6 @@
 # ZeyronAC Animation Engine v2.0 - 1.21.4 Optimized
-# Тема: Святое выжигание энергией солнца (Коллапс Сверхновой)
-# Длительность: 4.5 секунды (90 тиков)
+# Theme: Holy burning with solar energy (Supernova Collapse)
+# Duration: 4.5 seconds (90 ticks)
 
 totalTicks: 90
 freezePlayer: true
@@ -9,7 +9,7 @@ stripPlayer: true
 itemDropIntervalTicks: 7
 customLevitationAmplifier: 3 
 
-# Плавное перемещение игрока вверх
+# Smooth player movement upward
 movement:
   startTick: 1
   endTick: 60
@@ -20,7 +20,7 @@ movement:
 
 stages:
   # ==========================================
-  # СТЕЙДЖ 1: Золотая корона солнца (Вращающиеся кольца)
+  # STAGE 1: Golden solar crown (Rotating rings)
   # ==========================================
   - name: "Solar Crown"
     startTick: 1
@@ -45,10 +45,10 @@ stages:
         playAtTick: 0
         volume: 0.5
         pitch: 1.8 
-        loop: false          # ОТКЛЮЧЕНО: Звук больше не будет спамить и накладываться
+        loop: false          # DISABLED: Sound will no longer spam and overlap
 
   # ==========================================
-  # СТЕЙДЖ 2: Нарастание тепла (Огненная Сфера раздувается)
+  # STAGE 2: Heat buildup (Fire Sphere inflating)
   # ==========================================
   - name: "Plasma Core"
     startTick: 35
@@ -70,13 +70,13 @@ stages:
         speed: 0.0
 
   # ==========================================
-  # СТЕЙДЖ 3: ФИНАЛ - Коллапс сферы внутрь игрока + аккуратные искры (85 - 90 тики)
+  # STAGE 3: FINALE - Sphere collapse into player + neat sparks (85 - 90 ticks)
   # ==========================================
   - name: "Supernova Collapse"
     startTick: 85
     endTick: 90
     particles:
-      # ЭФФЕКТ 1: Все оранжево-желтые частицы резко засасывает внутрь игрока
+      # EFFECT 1: All orange-yellow particles are sharply sucked into the player
       - particleType: "DUST"
         shape: "SPHERE"
         intervalTicks: 5    
@@ -92,7 +92,7 @@ stages:
         particleSize: 1.3
         speed: 0.0          
 
-      # ЭФФЕКТ 2: Аккуратное, небольшое облачко искр фейерверка в точке схлопывания
+      # EFFECT 2: Neat, small cloud of firework sparks at the collapse point
       - particleType: "FIREWORKS_SPARK"
         shape: "SPHERE"     
         intervalTicks: 5    

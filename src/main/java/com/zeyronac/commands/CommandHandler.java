@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.commands;
@@ -107,8 +107,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         Set<String> reloadOrAdmin = Set.of(Permissions.RELOAD, Permissions.ADMIN);
 
         // Data collection commands are intentionally permission-less (legacy behavior preserved).
-        register("start", Set.of(), false, this::handleStart);
-        register("stop", Set.of(), false, this::handleStop);
+        register("record", Set.of(), false, this::handleRecord);
 
         register("alerts", alertsOrAdmin, true, (sender, args) -> handleAlerts(sender));
         register("monitor", alertsOrAdmin, true, (sender, args) -> handleMonitor(sender));
@@ -237,7 +236,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             AIPlayerData data = aiCheck.getPlayerData(targetId);
             String message;
             if (data == null) {
-                message = ColorUtil.colorize("&7" + targetName + ": &eНет данных");
+                message = ColorUtil.colorize("&7" + targetName + ": &eNo data");
             } else {
                 double buffer = data.getBuffer();
                 int vl = plugin.getViolationManager().getViolationLevel(targetId);
@@ -278,10 +277,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         if (animationManager != null) {
             try {
                 animationManager.reload();
-                sender.sendMessage(getPrefix() + ColorUtil.colorize("&aАнимации перезагружены! &7(" +
-                        animationManager.getAvailableAnimations().size() + " анимаций)"));
+                sender.sendMessage(getPrefix() + ColorUtil.colorize("&aAnimations reloaded! &7(" +
+                        animationManager.getAvailableAnimations().size() + " animations)"));
             } catch (Exception e) {
-                sender.sendMessage(getPrefix() + ColorUtil.colorize("&cОшибка при перезагрузке анимаций!"));
+                sender.sendMessage(getPrefix() + ColorUtil.colorize("&cError reloading animations!"));
                 plugin.getLogger().severe("Failed to reload animations: " + e.getMessage());
             }
         }
@@ -296,7 +295,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         if (expiresAt == null || expiresAt < now) {
             reinstallConfirmations.put(confirmationKey, now + REINSTALL_CONFIRM_WINDOW_MILLIS);
             sender.sendMessage(getPrefix() + ColorUtil.colorize(
-                    "&eПовторно введите &f/zeyronac reinstall &eв течение 3 секунд для подтверждения."));
+                    "&eRe-enter &f/zeyronac reinstall &ewithin 3 seconds to confirm."));
             return;
         }
         reinstallConfirmations.remove(confirmationKey);
@@ -478,7 +477,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         sender.sendMessage(getPrefix() + msg("data-status-header"));
         sender.sendMessage(msg("active-sessions", "{COUNT}", String.valueOf(activeSessions)));
         if (activeSessions > 0) {
-            sender.sendMessage(ColorUtil.colorize("&7Игроки собирающие данные:"));
+            sender.sendMessage(ColorUtil.colorize("&7Players collecting data:"));
             for (DataSession session : sessionManager.getActiveSessions()) {
                 Player player = Bukkit.getPlayer(session.getUuid());
                 String playerName = player != null ? player.getName() : session.getPlayerName();
@@ -488,8 +487,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 int tickCount = session.getTickCount();
                 sender.sendMessage(ColorUtil.colorize("&b  " + playerName + "&7 [&e" + sessionLabel + "&7]" +
                         (comment.isEmpty() ? "" : " \"" + comment + "\"")));
-                sender.sendMessage(ColorUtil.colorize("&7    Тики: &a" + tickCount +
-                        "&7 | В бою: " + (inCombat ? "&aДа" : "&cНет")));
+                sender.sendMessage(ColorUtil.colorize("&7    Ticks: &a" + tickCount +
+                        "&7 | In combat: " + (inCombat ? "&aYes" : "&cNo")));
             }
         } else {
             sender.sendMessage(msg("no-active-sessions"));
@@ -497,73 +496,136 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         }
     }
 
-    private void handleStart(CommandSender sender, String[] args) {
-        if (args.length < 3) {
-            sender.sendMessage(getPrefix() + msg("usage-start"));
+    private void handleRecord(CommandSender sender, String[] args) {
+        if (args.length < 2) {
+            sender.sendMessage(getPrefix() + msg("record-usage"));
             return;
         }
-        String target = args[1];
-        String labelStr = args[2];
+        String sub = args[1].toLowerCase();
+        switch (sub) {
+            case "start":
+                handleRecordStart(sender, args);
+                return;
+            case "stop":
+                handleRecordStop(sender, args);
+                return;
+            case "status":
+                handleRecordStatus(sender);
+                return;
+            default:
+                sender.sendMessage(getPrefix() + msg("record-usage"));
+        }
+    }
+
+    private void handleRecordStart(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage(getPrefix() + msg("record-start-usage"));
+            return;
+        }
+        String playerName = args[2];
+        String labelStr = args[3];
         Label sessionLabel = Label.fromString(labelStr);
         if (sessionLabel == null) {
             sender.sendMessage(getPrefix() + msg("invalid-label", "{LABEL}", labelStr));
             sender.sendMessage(getPrefix() + msg("valid-labels"));
             return;
         }
-        String comment = parseComment(args, 3);
-        handleStartPlayer(sender, target, sessionLabel, comment);
-    }
+        String comment = parseComment(args, 4);
 
-    private void handleStartPlayer(CommandSender sender, String playerName, Label label, String comment) {
-        Player player = Bukkit.getPlayer(playerName);
+        Player player = Bukkit.getPlayerExact(playerName);
         if (player == null) {
             sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", playerName));
             return;
         }
-        sessionManager.startSession(player, label, comment);
-        sender.sendMessage(getPrefix() + msg("session-started", "{LABEL}", label.name(), "{COUNT}", "1"));
-    }
-
-    private void handleStop(CommandSender sender, String[] args) {
-        if (args.length < 2) {
-            sender.sendMessage(getPrefix() + msg("usage-stop"));
+        if (sessionManager.hasActiveSession(player.getUniqueId())) {
+            sender.sendMessage(getPrefix()
+                + msg("session-already-active", "{PLAYER}", player.getName()));
             return;
         }
-        String target = args[1];
+        DataSession session = sessionManager.startSession(player, sessionLabel, comment);
+        if (session == null) {
+            sender.sendMessage(getPrefix()
+                + msg("session-already-active", "{PLAYER}", player.getName()));
+            return;
+        }
+        sender.sendMessage(getPrefix()
+            + msg("session-started", "{LABEL}", sessionLabel.name(), "{PLAYER}", player.getName()));
+    }
+
+    private void handleRecordStop(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(getPrefix() + msg("record-stop-usage"));
+            return;
+        }
+        String target = args[2];
         if (target.equalsIgnoreCase("all")) {
-            handleStopAll(sender);
+            int count = sessionManager.getActiveSessionCount();
+            sessionManager.stopAllSessions();
+            sender.sendMessage(getPrefix()
+                + msg("all-sessions-stopped", "{COUNT}", String.valueOf(count)));
             return;
         }
-        handleStopPlayer(sender, target);
-    }
-
-    private void handleStopAll(CommandSender sender) {
-        int count = sessionManager.getActiveSessionCount();
-        sessionManager.stopAllSessions();
-        sender.sendMessage(getPrefix() + msg("all-sessions-stopped", "{COUNT}", String.valueOf(count)));
-    }
-
-    private void handleStopPlayer(CommandSender sender, String playerName) {
-        Player player = Bukkit.getPlayer(playerName);
+        // Once online oyuncu dene, sonra offline (UUID ile session hala duruyor olabilir).
+        Player player = Bukkit.getPlayerExact(target);
         if (player != null) {
-            if (!sessionManager.hasActiveSession(player)) {
-                sender.sendMessage(getPrefix() + msg("no-sessions-to-stop"));
+            if (!sessionManager.hasActiveSession(player.getUniqueId())) {
+                sender.sendMessage(getPrefix()
+                    + msg("no-sessions-to-stop", "{PLAYER}", player.getName()));
                 return;
             }
             sessionManager.stopSession(player);
-            sender.sendMessage(getPrefix() + msg("session-stopped", "{PLAYER}", player.getName()));
+            sender.sendMessage(getPrefix()
+                + msg("session-stopped", "{PLAYER}", player.getName()));
             return;
         }
-
+        // Offline: ismiyle aktif session varsa UUID werwe bul
         for (DataSession session : sessionManager.getActiveSessions()) {
-            if (session.getPlayerName().equalsIgnoreCase(playerName)) {
+            if (session.getPlayerName().equalsIgnoreCase(target)) {
+                sessionManager.stopSession(session.getUuid());
                 sender.sendMessage(getPrefix()
-                        + ColorUtil.colorize("&cOffline stopping not fully supported without SessionManager update."));
+                    + msg("session-stopped", "{PLAYER}", session.getPlayerName()));
                 return;
             }
         }
+        sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", target));
+    }
 
-        sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", playerName));
+    private void handleRecordStatus(CommandSender sender) {
+        int count = sessionManager.getActiveSessionCount();
+        sender.sendMessage(getPrefix() + msg("record-status-header"));
+        if (count == 0) {
+            sender.sendMessage(msg("record-status-empty"));
+            return;
+        }
+        sender.sendMessage(ColorUtil.colorize("&fActive records: &a" + count));
+        sender.sendMessage(ColorUtil.colorize("&7─────────────────────────────────"));
+        for (DataSession session : sessionManager.getActiveSessions()) {
+            Player player = Bukkit.getPlayer(session.getUuid());
+            String name = player != null ? player.getName() : session.getPlayerName();
+            long durationMs = java.time.Duration.between(session.getStartTime(), java.time.Instant.now()).toMillis();
+            String duration = formatDuration(durationMs);
+            int ticks = session.getTickCount();
+            sender.sendMessage(ColorUtil.colorize(String.format(java.util.Locale.ROOT,
+                "&b%s &7[&e%s&7] &7ticks: &a%d &7duration: &a%s",
+                name, session.getLabel().name(), ticks, duration)));
+            if (session.getComment() != null && !session.getComment().isEmpty()) {
+                sender.sendMessage(ColorUtil.colorize(
+                    msg("record-status-comment", "{COMMENT}", session.getComment())));
+            }
+            sender.sendMessage(ColorUtil.colorize(msg(
+                session.isInCombat() ? "record-status-incombat" : "record-status-notincombat")));
+        }
+        sender.sendMessage(ColorUtil.colorize("&7─────────────────────────────────"));
+    }
+
+    private String formatDuration(long ms) {
+        long sec = ms / 1000;
+        long h = sec / 3600;
+        long m = (sec % 3600) / 60;
+        long s = sec % 60;
+        if (h > 0) return String.format(java.util.Locale.ROOT, "%dh %dm %ds", h, m, s);
+        if (m > 0) return String.format(java.util.Locale.ROOT, "%dm %ds", m, s);
+        return String.format(java.util.Locale.ROOT, "%ds", s);
     }
 
     private String parseComment(String[] args, int startIndex) {
@@ -588,8 +650,7 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private void sendUsage(CommandSender sender) {
         sender.sendMessage(getPrefix() + msg("usage-header"));
-        sender.sendMessage(msg("usage-start"));
-        sender.sendMessage(msg("usage-stop"));
+        sender.sendMessage(msg("usage-record"));
         sender.sendMessage(msg("usage-datastatus"));
         sender.sendMessage(msg("usage-alerts"));
         sender.sendMessage(ColorUtil.colorize("&7  /zeyronac monitor - Toggle monitor mode (show all detections)"));
@@ -604,9 +665,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation reload - Reload only animations"));
         sender.sendMessage(ColorUtil
                 .colorize("&7  /zeyronac reinstall - Add missing fields to config, messages, menu, and holograms"));
-        sender.sendMessage(ColorUtil.colorize("&7  /zeyronac kicklist [page] - Список киков от AI античита"));
+        sender.sendMessage(ColorUtil.colorize("&7  /zeyronac kicklist [page] - List of kicks from AI anticheat"));
         sender.sendMessage(
-                ColorUtil.colorize("&7  /zeyronac falsepositive restore <player> - Сохранить 5000 тиков игрока в CSV"));
+                ColorUtil.colorize("&7  /zeyronac falsepositive restore <player> - Save 5000 ticks of player to CSV"));
     }
 
     @Override
@@ -616,15 +677,15 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             completions.addAll(filterStartsWith(new ArrayList<>(subCommands.keySet()), args[0]));
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
-            if (Arrays.asList("start", "stop", "prob", "punish", "profile").contains(subCommand)) {
+            if (Arrays.asList("prob", "punish", "profile").contains(subCommand)) {
                 List<String> targets = new ArrayList<>(getOnlinePlayerNames());
-                if (subCommand.equals("stop"))
-                    targets.add("all");
                 completions.addAll(filterStartsWith(targets, args[1]));
             } else if (subCommand.equals("falsepositive")) {
                 completions.add("restore");
             } else if (subCommand.equals("animation")) {
                 completions.addAll(filterStartsWith(Arrays.asList("test", "list", "reload"), args[1]));
+            } else if (subCommand.equals("record")) {
+                completions.addAll(filterStartsWith(Arrays.asList("start", "stop", "status"), args[1]));
             }
         } else if (args.length == 3) {
             String subCommand = args[0].toLowerCase();
@@ -632,19 +693,21 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 completions.addAll(filterStartsWith(getOnlinePlayerNames(), args[2]));
             } else if (subCommand.equals("punish")) {
                 completions.addAll(filterStartsWith(List.of("confirm"), args[2]));
-            } else if (args[0].equalsIgnoreCase("start")) {
+            } else if (subCommand.equals("animation") && args[1].equalsIgnoreCase("test")) {
+                completions.addAll(filterStartsWith(getOnlinePlayerNames(), args[2]));
+            } else if (subCommand.equals("record") && args[1].equalsIgnoreCase("start")) {
+                completions.addAll(filterStartsWith(getOnlinePlayerNames(), args[2]));
+            } else if (subCommand.equals("record") && args[1].equalsIgnoreCase("stop")) {
+                List<String> targets = new ArrayList<>(getOnlinePlayerNames());
+                targets.add("all");
+                completions.addAll(filterStartsWith(targets, args[2]));
+            }
+        } else if (args.length == 4) {
+            if (args[0].equalsIgnoreCase("record") && args[1].equalsIgnoreCase("start")) {
                 List<String> labels = Arrays.stream(Label.values())
                         .map(Label::name)
                         .collect(Collectors.toList());
-                completions.addAll(filterStartsWith(labels, args[2]));
-            } else if (subCommand.equalsIgnoreCase("animation") && args[1].equalsIgnoreCase("test")) {
-                completions.addAll(filterStartsWith(getOnlinePlayerNames(), args[2]));
-            }
-        } else if (args.length == 4) {
-            if (args[0].equalsIgnoreCase("start")) {
-                if (args[3].isEmpty() || args[3].startsWith("\"")) {
-                    completions.add("\"comment\"");
-                }
+                completions.addAll(filterStartsWith(labels, args[3]));
             } else if (args[0].equalsIgnoreCase("animation") && args[1].equalsIgnoreCase("test")) {
                 AnimationManager animationManager = plugin.getAnimationManager();
                 if (animationManager != null) {
@@ -652,6 +715,11 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                             new ArrayList<>(animationManager.getAvailableAnimations()),
                             args[3]));
                 }
+            }
+        } else if (args.length == 5) {
+            if (args[0].equalsIgnoreCase("record") && args[1].equalsIgnoreCase("start")
+                    && (args[3].isEmpty() || args[3].startsWith("\""))) {
+                completions.add("\"comment\"");
             }
         }
         return completions;
@@ -780,10 +848,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
     private void handleAnimation(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cИспользование:"));
-            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation test <игрок> <анимация> - Тест анимации"));
-            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation list - Список доступных анимаций"));
-            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation reload - Перезагрузить анимации"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cUsage:"));
+            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation test <player> <animation> - Test animation"));
+            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation list - List available animations"));
+            sender.sendMessage(ColorUtil.colorize("&7  /zeyronac animation reload - Reload animations"));
             return;
         }
 
@@ -800,13 +868,13 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 handleAnimationReload(sender);
                 break;
             default:
-                sender.sendMessage(getPrefix() + ColorUtil.colorize("&cНеизвестная подкоманда: " + args[1]));
+                sender.sendMessage(getPrefix() + ColorUtil.colorize("&cUnknown subcommand: " + args[1]));
         }
     }
 
     private void handleAnimationTest(CommandSender sender, String[] args) {
         if (args.length < 4) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cИспользование: /zeyronac animation test <игрок> <анимация>"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cUsage: /zeyronac animation test <player> <animation>"));
             return;
         }
 
@@ -821,66 +889,66 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
 
         AnimationManager animationManager = plugin.getAnimationManager();
         if (animationManager == null) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager не инициализирован!"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager not initialized!"));
             return;
         }
 
         if (!animationManager.hasAnimation(animationName)) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cАнимация &f" + animationName + " &cне найдена!"));
-            sender.sendMessage(ColorUtil.colorize("&7Используйте &f/zeyronac animation list &7для списка доступных анимаций."));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation &f" + animationName + " &cnot found!"));
+            sender.sendMessage(ColorUtil.colorize("&7Use &f/zeyronac animation list &7for a list of available animations."));
             return;
         }
 
-        // Тестовая команда (не выполняется)
-        String testCommand = "say " + target.getName() + " прошел тест анимации " + animationName;
+        // Test command (not executed)
+        String testCommand = "say " + target.getName() + " passed animation test " + animationName;
 
         boolean success = animationManager.playAnimation(target, animationName, testCommand);
 
         if (success) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&aЗапущена анимация &f" + animationName + " &aдля игрока &f" + target.getName()));
-            sender.sendMessage(ColorUtil.colorize("&7Это тестовый режим - команда бана не будет выполнена."));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&aAnimation started &f" + animationName + " &afor player &f" + target.getName()));
+            sender.sendMessage(ColorUtil.colorize("&7This is test mode - ban command will not be executed."));
         } else {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cНе удалось запустить анимацию!"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cFailed to start animation!"));
         }
     }
 
     private void handleAnimationList(CommandSender sender) {
         AnimationManager animationManager = plugin.getAnimationManager();
         if (animationManager == null) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager не инициализирован!"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager not initialized!"));
             return;
         }
 
         java.util.Set<String> animations = animationManager.getAvailableAnimations();
 
-        sender.sendMessage(ColorUtil.colorize("&8=== &7&lДОСТУПНЫЕ АНИМАЦИИ &8==="));
-        sender.sendMessage(ColorUtil.colorize("&7Всего анимаций: &f" + animations.size()));
-        sender.sendMessage(ColorUtil.colorize("&7Текущая по умолчанию: &a" + animationManager.getDefaultAnimationName()));
+        sender.sendMessage(ColorUtil.colorize("&8=== &7&lAVAILABLE ANIMATIONS &8==="));
+        sender.sendMessage(ColorUtil.colorize("&7Total animations: &f" + animations.size()));
+        sender.sendMessage(ColorUtil.colorize("&7Current default: &a" + animationManager.getDefaultAnimationName()));
         sender.sendMessage(ColorUtil.colorize("&7─────────────────────────────────"));
 
         for (String name : animations) {
             boolean isDefault = name.equals(animationManager.getDefaultAnimationName());
             String prefix = isDefault ? "&a● " : "&7• ";
-            sender.sendMessage(ColorUtil.colorize(prefix + "&f" + name + (isDefault ? " &7(по умолчанию)" : "")));
+            sender.sendMessage(ColorUtil.colorize(prefix + "&f" + name + (isDefault ? " &7(default)" : "")));
         }
 
         sender.sendMessage(ColorUtil.colorize("&7─────────────────────────────────"));
-        sender.sendMessage(ColorUtil.colorize("&7Используйте &f/zeyronac animation test <игрок> <анимация> &7для теста"));
+        sender.sendMessage(ColorUtil.colorize("&7Use &f/zeyronac animation test <player> <animation> &7to test"));
     }
 
     private void handleAnimationReload(CommandSender sender) {
         AnimationManager animationManager = plugin.getAnimationManager();
         if (animationManager == null) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager не инициализирован!"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cAnimation Manager not initialized!"));
             return;
         }
 
         try {
             animationManager.reload();
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&aАнимации успешно перезагружены!"));
-            sender.sendMessage(ColorUtil.colorize("&7Загружено анимаций: &f" + animationManager.getAvailableAnimations().size()));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&aAnimations successfully reloaded!"));
+            sender.sendMessage(ColorUtil.colorize("&7Loaded animations: &f" + animationManager.getAvailableAnimations().size()));
         } catch (Exception e) {
-            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cОшибка при перезагрузке анимаций!"));
+            sender.sendMessage(getPrefix() + ColorUtil.colorize("&cError reloading animations!"));
             plugin.getLogger().severe("Failed to reload animations: " + e.getMessage());
         }
     }

@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.config;
@@ -218,7 +218,7 @@ public class Config {
         plugin.saveDefaultConfig();
         FileConfiguration config = plugin.getConfig();
         
-        // Проверяем и добавляем отсутствующие поля анимации
+        // Check and add missing animation fields
         ensureAnimationFields(plugin, config);
         
         this.debug = config.getBoolean("debug", DEFAULT_DEBUG);
@@ -488,7 +488,7 @@ public class Config {
     }
     
     /**
-     * Миграция legacy префиксов {BAN} и {KICK} в {ANIMATION}
+     * Migrate legacy prefixes {BAN} and {KICK} to {ANIMATION}
      */
     private String migrateLegacyPrefixes(String command) {
         if (command == null) {
@@ -497,12 +497,12 @@ public class Config {
         
         String trimmed = command.trim();
         
-        // Заменяем {BAN} на {ANIMATION}
+        // Replace {BAN} with {ANIMATION}
         if (trimmed.startsWith("{BAN}")) {
             return "{ANIMATION}" + trimmed.substring(5);
         }
         
-        // Заменяем {KICK} на {ANIMATION}
+        // Replace {KICK} with {ANIMATION}
         if (trimmed.startsWith("{KICK}")) {
             return "{ANIMATION}" + trimmed.substring(6);
         }
@@ -814,19 +814,19 @@ public class Config {
     }
     
     /**
-     * Проверяет и добавляет отсутствующие поля анимации в config.yml
+     * Checks and adds missing animation fields to config.yml
      */
     private void ensureAnimationFields(JavaPlugin plugin, FileConfiguration config) {
         boolean needsSave = false;
         
-        // Проверяем наличие секции penalties.animation
+        // Check for penalties.animation section
         if (!config.contains("penalties.animation")) {
             config.set("penalties.animation.enabled", true);
             config.set("penalties.animation.type", "classic_ban");
             needsSave = true;
             plugin.getLogger().info("Added missing animation configuration to config.yml");
         } else {
-            // Проверяем отдельные поля
+            // Check individual fields
             if (!config.contains("penalties.animation.enabled")) {
                 config.set("penalties.animation.enabled", true);
                 needsSave = true;
@@ -837,7 +837,7 @@ public class Config {
             }
         }
         
-        // Сохраняем конфиг если были изменения
+        // Save config if there were changes
         if (needsSave) {
             try {
                 config.save(new java.io.File(plugin.getDataFolder(), "config.yml"));

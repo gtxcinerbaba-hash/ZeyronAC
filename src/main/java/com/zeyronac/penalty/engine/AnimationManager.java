@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.penalty.engine;
@@ -41,8 +41,8 @@ import java.util.Set;
 import java.util.logging.Level;
 
 /**
- * Менеджер анимаций - управляет загрузкой и выполнением анимаций.
- * Поддерживает множественные анимации и горячую перезагрузку.
+ * Animation manager - handles loading and execution of animations.
+ * Supports multiple animations and hot-reloading.
  */
 public class AnimationManager {
     private final JavaPlugin plugin;
@@ -57,22 +57,22 @@ public class AnimationManager {
     }
 
     /**
-     * Инициализация менеджера - загрузка всех анимаций
+     * Initialize the manager - load all animations
      */
     public void initialize() {
         plugin.getLogger().info("Initializing Animation Manager...");
 
-        // Создание папки animations если не существует
+        // Create animations folder if it doesn't exist
         File animationsFolder = new File(plugin.getDataFolder(), "animations");
         if (!animationsFolder.exists()) {
             animationsFolder.mkdirs();
             saveDefaultAnimations();
         }
 
-        // Загрузка кастомных анимаций из файлов
+        // Load custom animations from files
         loadCustomAnimations();
 
-        // Регистрация PacketEvents листенера для блокировки пакетов
+        // Register PacketEvents listener for packet blocking
         try {
             if (PacketEvents.getAPI() != null && PacketEvents.getAPI().isInitialized()) {
                 packetListener = new AnimationPacketListener(this);
@@ -87,12 +87,12 @@ public class AnimationManager {
     }
 
     /**
-     * Сохранение примеров анимаций в файлы
+     * Save example animation files
      */
     private void saveDefaultAnimations() {
         plugin.getLogger().info("Creating example animation files...");
         
-        // Список всех анимаций которые нужно скопировать из resources
+        // List of all animations to copy from resources
         String[] animationFiles = {
             "classic_ban.yml",
             "rainbow_ban.yml", 
@@ -104,13 +104,13 @@ public class AnimationManager {
         for (String fileName : animationFiles) {
             File targetFile = new File(animationsFolder, fileName);
             
-            // Пропускаем если файл уже существует
+            // Skip if file already exists
             if (targetFile.exists()) {
                 continue;
             }
             
             try {
-                // Копируем файл из resources/animations/
+                // Copy file from resources/animations/
                 java.io.InputStream resourceStream = plugin.getResource("animations/" + fileName);
                 if (resourceStream != null) {
                     java.nio.file.Files.copy(
@@ -128,23 +128,23 @@ public class AnimationManager {
             }
         }
         
-        // Создание документации (из корня resources, не из animations/)
+        // Create documentation (from resources root, not from animations/)
         saveGuideFile();
     }
 
     /**
-     * Сохранение ANIMATION_GUIDE.txt из корня resources в папку animations
+     * Save ANIMATION_GUIDE.txt from resources root to the animations folder
      */
     private void saveGuideFile() {
         File animationsFolder = new File(plugin.getDataFolder(), "animations");
         File targetFile = new File(animationsFolder, "ANIMATION_GUIDE.txt");
         
         if (targetFile.exists()) {
-            return; // Файл уже существует
+            return; // File already exists
         }
 
         try {
-            // Ищем файл в корне resources, а не в animations/
+            // Look for the file in resources root, not in animations/
             java.io.InputStream resourceStream = plugin.getResource("ANIMATION_GUIDE.txt");
             if (resourceStream != null) {
                 java.nio.file.Files.copy(
@@ -163,7 +163,7 @@ public class AnimationManager {
 
 
     /**
-     * Загрузка кастомных анимаций из папки animations/
+     * Load custom animations from the animations/ folder
      */
     private void loadCustomAnimations() {
         File animationsFolder = new File(plugin.getDataFolder(), "animations");
@@ -194,28 +194,28 @@ public class AnimationManager {
     }
 
     /**
-     * Перезагрузка всех анимаций
+     * Reload all animations
      */
     public void reload() {
         plugin.getLogger().info("Reloading animations...");
         
-        // Остановка всех текущих движков
+        // Stop all current engines
         for (BanAnimationEngine engine : engines.values()) {
             engine.shutdown();
         }
         engines.clear();
 
-        // Повторная инициализация
+        // Re-initialize
         initialize();
     }
 
     /**
-     * Запуск анимации по имени
+     * Play animation by name
      * 
-     * @param player игрок для анимации
-     * @param animationName имя анимации
-     * @param banCommand команда бана для выполнения после анимации
-     * @return true если анимация запущена, false если не найдена
+     * @param player player for the animation
+     * @param animationName animation name
+     * @param banCommand ban command to execute after the animation
+     * @return true if animation was started, false if not found
      */
     public boolean playAnimation(Player player, String animationName, String banCommand) {
         BanAnimationEngine engine = engines.get(animationName.toLowerCase());
@@ -235,14 +235,14 @@ public class AnimationManager {
     }
 
     /**
-     * Запуск анимации по умолчанию
+     * Play the default animation
      */
     public boolean playDefaultAnimation(Player player, String banCommand) {
         return playAnimation(player, defaultAnimationName, banCommand);
     }
 
     /**
-     * Проверка, анимируется ли игрок
+     * Check if a player is currently being animated
      */
     public boolean isAnimating(Player player) {
         for (BanAnimationEngine engine : engines.values()) {
@@ -254,21 +254,21 @@ public class AnimationManager {
     }
 
     /**
-     * Получение списка доступных анимаций
+     * Get the list of available animations
      */
     public Set<String> getAvailableAnimations() {
         return engines.keySet();
     }
 
     /**
-     * Проверка существования анимации
+     * Check if an animation exists
      */
     public boolean hasAnimation(String name) {
         return engines.containsKey(name.toLowerCase());
     }
 
     /**
-     * Установка анимации по умолчанию
+     * Set the default animation
      */
     public void setDefaultAnimation(String name) {
         if (hasAnimation(name)) {
@@ -280,19 +280,19 @@ public class AnimationManager {
     }
 
     /**
-     * Получение имени анимации по умолчанию
+     * Get the default animation name
      */
     public String getDefaultAnimationName() {
         return defaultAnimationName;
     }
 
     /**
-     * Остановка всех анимаций
+     * Stop all animations
      */
     public void shutdown() {
         plugin.getLogger().info("Shutting down Animation Manager...");
         
-        // Отключаем PacketEvents листенер
+        // Unregister PacketEvents listener
         try {
             if (packetListener != null && PacketEvents.getAPI() != null && PacketEvents.getAPI().isInitialized()) {
                 PacketEvents.getAPI().getEventManager().unregisterListener(packetListener);
@@ -309,14 +309,14 @@ public class AnimationManager {
     }
 
     /**
-     * Получение информации об анимации
+     * Get animation info
      */
     public String getAnimationInfo(String name) {
         if (!hasAnimation(name)) {
             return "Animation not found: " + name;
         }
 
-        // Здесь можно добавить детальную информацию о конфигурации
+        // Detailed configuration info can be added here
         return "Animation: " + name + " (loaded)";
     }
 }

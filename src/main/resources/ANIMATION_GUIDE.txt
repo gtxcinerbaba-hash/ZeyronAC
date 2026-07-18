@@ -1,80 +1,80 @@
 # 🎨 ZeyronAC Animation Engine - AI Prompt Guide
 
-## 📋 Оглавление
-1. [Возможности движка](#возможности-движка)
-2. [Как работать с нейросетью](#как-работать-с-нейросетью)
-3. [Готовые промпты для AI](#готовые-промпты-для-ai)
-4. [Примеры генерации](#примеры-генерации)
-5. [Советы и трюки](#советы-и-трюки)
+## 📋 Table of Contents
+1. [Engine Features](#engine-features)
+2. [How to Work with AI](#how-to-work-with-ai)
+3. [Ready-made AI Prompts](#ready-made-ai-prompts)
+4. [Generation Examples](#generation-examples)
+5. [Tips and Tricks](#tips-and-tricks)
 
 ---
 
-## 🚀 Возможности движка
+## 🚀 Engine Features
 
-### Основные параметры
-- **totalTicks**: Длительность анимации (20 тиков = 1 секунда)
-- **freezePlayer**: Заморозка игрока (Slowness, Levitation, Jump Boost)
-- **strikeLightningAtEnd**: Молния в конце анимации
-- **stripPlayer**: Раздеть игрока (снять броню и выкинуть предметы)
-- **itemDropIntervalTicks**: Интервал выкидывания предметов (в тиках)
-- **customLevitationAmplifier**: Кастомная сила левитации (-1 = стандартная)
+### Main Parameters
+- **totalTicks**: Animation duration (20 ticks = 1 second)
+- **freezePlayer**: Freeze the player (Slowness, Levitation, Jump Boost)
+- **strikeLightningAtEnd**: Lightning at the end of the animation
+- **stripPlayer**: Strip the player (remove armor and drop items)
+- **itemDropIntervalTicks**: Item drop interval (in ticks)
+- **customLevitationAmplifier**: Custom levitation strength (-1 = standard)
 
-### Перемещение игрока (movement)
-- **startTick/endTick**: Период перемещения
-- **offsetX/Y/Z**: Смещение по координатам
-- **smooth**: Плавное перемещение с интерполяцией
+### Player Movement (movement)
+- **startTick/endTick**: Movement period
+- **offsetX/Y/Z**: Coordinate offset
+- **smooth**: Smooth movement with interpolation
 
-### Стейджи (Stages)
-- ✅ **Параллельное выполнение** - несколько стейджей одновременно
-- ✅ **Пересечение по времени** - Stage 1 (тики 1-60) + Stage 2 (тики 20-80)
-- ✅ **Независимые таймлайны** - каждый стейдж имеет свои startTick/endTick
-- ✅ **Тайтлы на экране** - показ текста игроку
-- ✅ **Молнии в процессе** - удары молнии на определенных тиках
-- ✅ **След из частиц** - частицы за игроком во время движения
+### Stages
+- ✅ **Parallel execution** - multiple stages simultaneously
+- ✅ **Time overlap** - Stage 1 (ticks 1-60) + Stage 2 (ticks 20-80)
+- ✅ **Independent timelines** - each stage has its own startTick/endTick
+- ✅ **On-screen titles** - show text to the player
+- ✅ **Lightning during animation** - lightning strikes at specific ticks
+- ✅ **Particle trail** - particles behind the player during movement
 
-### Формы частиц (Shapes)
-1. **POINT** - одиночная точка
-2. **RISING_SPIRAL** - восходящая спираль (левитация)
-3. **SPHERE** - сфера (алгоритм Фибоначчи)
-4. **EXPLOSION** - взрыв (случайные направления)
-5. **HELIX** - двойная спираль (ДНК-эффект)
-6. **CIRCLE** - горизонтальный круг
+### Particle Shapes
+1. **POINT** - single point
+2. **RISING_SPIRAL** - ascending spiral (levitation)
+3. **SPHERE** - sphere (Fibonacci algorithm)
+4. **EXPLOSION** - explosion (random directions)
+5. **HELIX** - double helix (DNA effect)
+6. **CIRCLE** - horizontal circle
 
-### Трансформации
-- **radiusStart/End** - изменение радиуса от начала к концу стейджа
-- **heightOffsetStart/End** - изменение высоты (левитация)
-- **Линейная интерполяция** - плавные переходы
+### Transforms
+- **radiusStart/End** - radius change from start to end of stage
+- **heightOffsetStart/End** - height change (levitation)
+- **Linear interpolation** - smooth transitions
 
-### Цветные частицы
-- **isColored: true** - включить кастомный цвет
-- **red/green/blue** - RGB значения (0-255)
-- **particleSize** - размер частицы (0.1-3.0)
-- Работает с **REDSTONE/DUST** частицами
+### Colored Particles
+- **isColored: true** - enable custom color
+- **red/green/blue** - RGB values (0-255)
+- **particleSize** - particle size (0.1-3.0)
+- Works with **REDSTONE/DUST** particles
 
-### Звуки
-- **loop: true** - зацикливание звука
-- **loopIntervalTicks** - интервал повтора
-- **volume/pitch** - громкость и тон
+### Sounds
+- **loop: true** - sound looping
+- **loopIntervalTicks** - repeat interval
+- **volume/pitch** - volume and pitch
 
-### Тайтлы (Titles)
-- **showAtTick** - тик показа тайтла относительно начала стейджа
-- **title** - заголовок (поддерживает цветовые коды §)
-- **subtitle** - подзаголовок
-- **fadeIn/stay/fadeOut** - время появления/показа/исчезновения (в тиках)
+### Titles
+- **showAtTick** - tick to show the title relative to stage start
+- **title** - title text (supports color codes §)
+- **subtitle** - subtitle text
+- **fadeIn/stay/fadeOut** - fade-in/display/fade-out time (in ticks)
 
-### Молнии в процессе
-- **lightningTicks** - список тиков для ударов молнии (например: [10, 30, 50])
+### Lightning During Animation
+- **lightningTicks** - list of ticks for lightning strikes (e.g.: [10, 30, 50])
 
-### След из частиц (Particle Trail)
-- **particleType** - тип частицы
-- **intervalTicks** - интервал спавна частиц
-- **count** - количество частиц за один спавн
-- **isColored** - использовать кастомный цвет
-- **red/green/blue** - RGB значения (0-255)
-- **particleSize** - размер частицы
-- **offsetX/Y/Z** - разброс частиц
+### Particle Trail
+- **particleType** - particle type
+- **intervalTicks** - particle spawn interval
+- **count** - number of particles per spawn
+- **isColored** - use custom color
+- **red/green/blue** - RGB values (0-255)
+- **particleSize** - particle size
+- **offsetX/Y/Z** - particle spread
 
-### Доступные частицы (Minecraft 1.16+)
+### Available Particles (Minecraft 1.16+)
 ```
 FLAME, SMOKE_NORMAL, SMOKE_LARGE, SPELL_WITCH, REDSTONE, 
 PORTAL, EXPLOSION_LARGE, EXPLOSION_NORMAL, FIREWORKS_SPARK,
@@ -85,7 +85,7 @@ END_ROD, DRAGON_BREATH, DAMAGE_INDICATOR, SWEEP_ATTACK,
 TOTEM, SOUL, SOUL_FIRE_FLAME, FALLING_DUST
 ```
 
-### Доступные звуки
+### Available Sounds
 ```
 ENTITY_GENERIC_EXPLODE, ENTITY_EXPERIENCE_ORB_PICKUP,
 BLOCK_NOTE_BLOCK_PLING, BLOCK_PORTAL_AMBIENT,
@@ -96,146 +96,146 @@ ENTITY_ENDERMAN_TELEPORT, BLOCK_GLASS_BREAK
 
 ---
 
-## 🤖 Как работать с нейросетью
+## 🤖 How to Work with AI
 
-### Структура промпта для AI
+### AI Prompt Structure
 
 ```
-Создай YAML конфигурацию анимации бана для Minecraft плагина со следующими параметрами:
+Create a YAML ban animation configuration for a Minecraft plugin with the following parameters:
 
-ТЕМА: [описание темы - огонь, лед, магия, космос и т.д.]
-ДЛИТЕЛЬНОСТЬ: [количество секунд]
-НАСТРОЕНИЕ: [драматичное, спокойное, агрессивное, мистическое]
+THEME: [theme description - fire, ice, magic, space, etc.]
+DURATION: [number of seconds]
+MOOD: [dramatic, calm, aggressive, mystical]
 
-ТРЕБОВАНИЯ:
-- Используй [количество] параллельных стейджей
-- Основные цвета: [RGB значения или названия]
-- Формы: [SPHERE, SPIRAL, EXPLOSION и т.д.]
-- Звуки: [да/нет, какие]
+REQUIREMENTS:
+- Use [number] parallel stages
+- Main colors: [RGB values or names]
+- Shapes: [SPHERE, SPIRAL, EXPLOSION, etc.]
+- Sounds: [yes/no, which ones]
 
-СТРУКТУРА:
-totalTicks: [длительность * 20]
+STRUCTURE:
+totalTicks: [duration * 20]
 freezePlayer: true
 strikeLightningAtEnd: [true/false]
 stages:
-  - [описание стейджа 1]
-  - [описание стейджа 2]
+  - [stage 1 description]
+  - [stage 2 description]
   - ...
 ```
 
-### Ключевые слова для AI
+### AI Keywords
 
-**Для форм:**
-- "восходящая спираль" → RISING_SPIRAL
-- "сфера" / "шар" → SPHERE
-- "взрыв" → EXPLOSION
-- "двойная спираль" / "ДНК" → HELIX
-- "круг" / "кольцо" → CIRCLE
+**For shapes:**
+- "ascending spiral" → RISING_SPIRAL
+- "sphere" / "ball" → SPHERE
+- "explosion" → EXPLOSION
+- "double helix" / "DNA" → HELIX
+- "circle" / "ring" → CIRCLE
 
-**Для эффектов:**
-- "огонь" → FLAME
-- "дым" → SMOKE_LARGE
-- "магия" → SPELL_WITCH
-- "портал" → PORTAL
-- "молния" → END_ROD
-- "душа" → SOUL
+**For effects:**
+- "fire" → FLAME
+- "smoke" → SMOKE_LARGE
+- "magic" → SPELL_WITCH
+- "portal" → PORTAL
+- "lightning" → END_ROD
+- "soul" → SOUL
 
-**Для трансформаций:**
-- "расширяющийся" → radiusStart < radiusEnd
-- "сжимающийся" → radiusStart > radiusEnd
-- "поднимающийся" → heightOffsetStart < heightOffsetEnd
-- "опускающийся" → heightOffsetStart > heightOffsetEnd
+**For transforms:**
+- "expanding" → radiusStart < radiusEnd
+- "contracting" → radiusStart > radiusEnd
+- "rising" → heightOffsetStart < heightOffsetEnd
+- "descending" → heightOffsetStart > heightOffsetEnd
 
 ---
 
-## 📝 Готовые промпты для AI
+## 📝 Ready-made AI Prompts
 
-### Промпт 1: Огненная анимация
+### Prompt 1: Fire Animation
 
 ```
-Создай YAML конфигурацию огненной анимации бана для Minecraft:
+Create a YAML fire ban animation configuration for Minecraft:
 
-ТЕМА: Адский огонь и лава
-ДЛИТЕЛЬНОСТЬ: 5 секунд (100 тиков)
-НАСТРОЕНИЕ: Агрессивное, устрашающее
+THEME: Hellfire and lava
+DURATION: 5 seconds (100 ticks)
+MOOD: Aggressive, intimidating
 
-ТРЕБОВАНИЯ:
-- 3 параллельных стейджа
-- Цвета: красный (255,0,0), оранжевый (255,165,0), желтый (255,255,0)
-- Формы: огненная спираль → огненная сфера → взрыв лавы
-- Звуки: треск огня, взрыв в конце
-- Раздеть игрока и выкидывать предметы каждые 10 тиков
-- Огненный след за игроком
-- Тайтл "СГОРЕЛ" на экране
+REQUIREMENTS:
+- 3 parallel stages
+- Colors: red (255,0,0), orange (255,165,0), yellow (255,255,0)
+- Shapes: fire spiral → fire sphere → lava explosion
+- Sounds: fire crackling, explosion at the end
+- Strip the player and drop items every 10 ticks
+- Fire trail behind the player
+- Title "BURNED" on screen
 
-СТРУКТУРА:
-Stage 1 (тики 1-60): Огненная спираль, поднимающаяся вверх
-  - FLAME частицы
-  - RISING_SPIRAL форма
+STRUCTURE:
+Stage 1 (ticks 1-60): Fire spiral rising upward
+  - FLAME particles
+  - RISING_SPIRAL shape
   - radiusStart: 2.0, radiusEnd: 1.0
   - heightOffsetStart: 0.0, heightOffsetEnd: 3.0
-  - Огненный след (particleTrail)
+  - Fire trail (particleTrail)
 
-Stage 2 (тики 40-90): Сжимающаяся огненная сфера
-  - FLAME частицы
-  - SPHERE форма
+Stage 2 (ticks 40-90): Contracting fire sphere
+  - FLAME particles
+  - SPHERE shape
   - radiusStart: 3.5, radiusEnd: 0.5
-  - Добавить красные REDSTONE частицы для цвета
-  - Тайтл "СГОРЕЛ" на 0 тике стейджа
-  - Молнии на тиках [10, 30, 50]
+  - Add red REDSTONE particles for color
+  - Title "BURNED" at tick 0 of the stage
+  - Lightning at ticks [10, 30, 50]
 
-Stage 3 (тики 90-100): Взрыв лавы
-  - LAVA частицы
-  - EXPLOSION форма
+Stage 3 (ticks 90-100): Lava explosion
+  - LAVA particles
+  - EXPLOSION shape
   - count: 100
-  - Звук ENTITY_GENERIC_EXPLODE
+  - Sound ENTITY_GENERIC_EXPLODE
 
-Новые параметры:
+New parameters:
 stripPlayer: true
 itemDropIntervalTicks: 10
 customLevitationAmplifier: 3
 
-Используй формат YAML из примера classic_ban.yml
+Use the YAML format from the classic_ban.yml example
 ```
 
-### Промпт 2: Ледяная анимация
+### Prompt 2: Ice Animation
 
 ```
-Создай YAML конфигурацию ледяной анимации бана:
+Create a YAML ice ban animation configuration:
 
-ТЕМА: Ледяная магия и заморозка
-ДЛИТЕЛЬНОСТЬ: 4 секунды (80 тиков)
-НАСТРОЕНИЕ: Холодное, мистическое
+THEME: Ice magic and freezing
+DURATION: 4 seconds (80 ticks)
+MOOD: Cold, mystical
 
-ТРЕБОВАНИЯ:
-- 2 параллельных стейджа
-- Цвета: голубой (0,191,255), белый (255,255,255), светло-синий (173,216,230)
-- Формы: ледяные кристаллы (CIRCLE) → замораживающая сфера (SPHERE)
-- Звуки: звон льда, треск заморозки
-- Ледяной след за игроком
-- Тайтл "ЗАМОРОЖЕН" на экране
-- Перемещение игрока вверх на 2 блока
+REQUIREMENTS:
+- 2 parallel stages
+- Colors: cyan (0,191,255), white (255,255,255), light blue (173,216,230)
+- Shapes: ice crystals (CIRCLE) → freezing sphere (SPHERE)
+- Sounds: ice chime, freeze crackle
+- Ice trail behind the player
+- Title "FROZEN" on screen
+- Move player up by 2 blocks
 
-ДЕТАЛИ:
-Stage 1 (тики 1-60): Ледяные кристаллы
-  - REDSTONE частицы с isColored: true
+DETAILS:
+Stage 1 (ticks 1-60): Ice crystals
+  - REDSTONE particles with isColored: true
   - red: 0, green: 191, blue: 255
-  - CIRCLE форма
-  - count: 12 точек на окружности
+  - CIRCLE shape
+  - count: 12 points on the circle
   - radiusStart: 1.0, radiusEnd: 2.0
-  - Звук BLOCK_GLASS_BREAK каждые 15 тиков
-  - Ледяной след (particleTrail)
-  - Тайтл "ЗАМОРОЖЕН" на 0 тике
+  - Sound BLOCK_GLASS_BREAK every 15 ticks
+  - Ice trail (particleTrail)
+  - Title "FROZEN" at tick 0
 
-Stage 2 (тики 30-80): Замораживающая сфера
-  - REDSTONE частицы (белые: 255,255,255)
-  - SPHERE форма
+Stage 2 (ticks 30-80): Freezing sphere
+  - REDSTONE particles (white: 255,255,255)
+  - SPHERE shape
   - count: 25
   - radiusStart: 3.0, radiusEnd: 0.3
   - particleSize: 1.5
-  - Молнии на тиках [20, 40]
+  - Lightning at ticks [20, 40]
 
-Новые параметры:
+New parameters:
 stripPlayer: false
 customLevitationAmplifier: 0
 movement:
@@ -246,187 +246,187 @@ movement:
   offsetZ: 0.0
   smooth: true
 
-Финал: strikeLightningAtEnd: false (лед не сочетается с молнией)
+Finale: strikeLightningAtEnd: false (ice doesn't mix with lightning)
 ```
 
-### Промпт 3: Космическая анимация
+### Prompt 3: Space Animation
 
 ```
-Создай YAML конфигурацию космической анимации бана:
+Create a YAML space ban animation configuration:
 
-ТЕМА: Космос, звезды, черная дыра
-ДЛИТЕЛЬНОСТЬ: 6 секунд (120 тиков)
-НАСТРОЕНИЕ: Мистическое, завораживающее
+THEME: Space, stars, black hole
+DURATION: 6 seconds (120 ticks)
+MOOD: Mystical, mesmerizing
 
-ТРЕБОВАНИЯ:
-- 4 параллельных стейджа
-- Цвета: фиолетовый (138,43,226), темно-синий (0,0,139), белый (255,255,255)
-- Формы: звездная спираль → галактика → черная дыра → взрыв
-- Звуки: портальный гул, космический взрыв
+REQUIREMENTS:
+- 4 parallel stages
+- Colors: purple (138,43,226), dark blue (0,0,139), white (255,255,255)
+- Shapes: star spiral → galaxy → black hole → explosion
+- Sounds: portal hum, cosmic explosion
 
-ДЕТАЛИ:
-Stage 1 (тики 1-40): Звездная спираль
-  - END_ROD частицы
-  - HELIX форма (двойная спираль)
+DETAILS:
+Stage 1 (ticks 1-40): Star spiral
+  - END_ROD particles
+  - HELIX shape (double helix)
   - radiusStart: 0.5, radiusEnd: 1.5
   - heightOffsetStart: 0.0, heightOffsetEnd: 2.5
 
-Stage 2 (тики 20-70): Галактика
-  - PORTAL частицы
-  - SPHERE форма
+Stage 2 (ticks 20-70): Galaxy
+  - PORTAL particles
+  - SPHERE shape
   - count: 30
-  - radiusStart: 2.5, radiusEnd: 3.5 (расширяющаяся)
-  - Звук BLOCK_PORTAL_AMBIENT (loop: true, interval: 10)
+  - radiusStart: 2.5, radiusEnd: 3.5 (expanding)
+  - Sound BLOCK_PORTAL_AMBIENT (loop: true, interval: 10)
 
-Stage 3 (тики 60-100): Черная дыра
-  - REDSTONE частицы (фиолетовые: 138,43,226)
-  - SPHERE форма
+Stage 3 (ticks 60-100): Black hole
+  - REDSTONE particles (purple: 138,43,226)
+  - SPHERE shape
   - count: 40
-  - radiusStart: 3.5, radiusEnd: 0.1 (сжатие в точку)
+  - radiusStart: 3.5, radiusEnd: 0.1 (compressed to a point)
   - particleSize: 2.0
 
-Stage 4 (тики 100-120): Космический взрыв
-  - DRAGON_BREATH частицы
-  - EXPLOSION форма
+Stage 4 (ticks 100-120): Cosmic explosion
+  - DRAGON_BREATH particles
+  - EXPLOSION shape
   - count: 150
   - radiusStart: 3.0
-  - Звук ENTITY_ENDER_DRAGON_GROWL
+  - Sound ENTITY_ENDER_DRAGON_GROWL
 ```
 
-### Промпт 4: Природная анимация
+### Prompt 4: Nature Animation
 
 ```
-Создай YAML конфигурацию природной анимации бана:
+Create a YAML nature ban animation configuration:
 
-ТЕМА: Природная магия, листья, ветер
-ДЛИТЕЛЬНОСТЬ: 4 секунды (80 тиков)
-НАСТРОЕНИЕ: Спокойное, естественное
+THEME: Nature magic, leaves, wind
+DURATION: 4 seconds (80 ticks)
+MOOD: Calm, natural
 
-ТРЕБОВАНИЯ:
-- 3 параллельных стейджа
-- Цвета: зеленый (0,255,0), коричневый (139,69,19), желтый (255,255,0)
-- Формы: вихрь листьев → природная сфера → рассеивание
-- Звуки: шелест листьев
+REQUIREMENTS:
+- 3 parallel stages
+- Colors: green (0,255,0), brown (139,69,19), yellow (255,255,0)
+- Shapes: leaf vortex → nature sphere → dissipation
+- Sounds: rustling leaves
 
-ДЕТАЛИ:
-Stage 1 (тики 1-50): Вихрь листьев
-  - REDSTONE частицы (зеленые: 0,255,0)
-  - RISING_SPIRAL форма
+DETAILS:
+Stage 1 (ticks 1-50): Leaf vortex
+  - REDSTONE particles (green: 0,255,0)
+  - RISING_SPIRAL shape
   - count: 5
   - radiusStart: 1.5, radiusEnd: 2.0
   - heightOffsetStart: -0.5, heightOffsetEnd: 2.0
-  - intervalTicks: 2 (для плавности)
+  - intervalTicks: 2 (for smoothness)
 
-Stage 2 (тики 30-70): Природная сфера
-  - VILLAGER_HAPPY частицы
-  - SPHERE форма
+Stage 2 (ticks 30-70): Nature sphere
+  - VILLAGER_HAPPY particles
+  - SPHERE shape
   - count: 20
   - radiusStart: 2.5, radiusEnd: 1.0
 
-Stage 3 (тики 70-80): Рассеивание
-  - REDSTONE частицы (желтые: 255,255,0)
-  - EXPLOSION форма
+Stage 3 (ticks 70-80): Dissipation
+  - REDSTONE particles (yellow: 255,255,0)
+  - EXPLOSION shape
   - count: 50
   - radiusStart: 2.0
-  - speed: 0.5 (медленное рассеивание)
+  - speed: 0.5 (slow dissipation)
 
-Финал: strikeLightningAtEnd: false
+Finale: strikeLightningAtEnd: false
 ```
 
-### Промпт 5: Радужная анимация
+### Prompt 5: Rainbow Animation
 
 ```
-Создай YAML конфигурацию радужной анимации бана:
+Create a YAML rainbow ban animation configuration:
 
-ТЕМА: Радуга, все цвета спектра
-ДЛИТЕЛЬНОСТЬ: 5 секунд (100 тиков)
-НАСТРОЕНИЕ: Яркое, красочное
+THEME: Rainbow, all colors of the spectrum
+DURATION: 5 seconds (100 ticks)
+MOOD: Bright, colorful
 
-ТРЕБОВАНИЯ:
-- 7 параллельных стейджей (по одному на каждый цвет радуги)
-- Цвета: красный → оранжевый → желтый → зеленый → голубой → синий → фиолетовый
-- Все стейджи используют RISING_SPIRAL форму
-- Стейджи пересекаются для плавного перехода цветов
+REQUIREMENTS:
+- 7 parallel stages (one for each rainbow color)
+- Colors: red → orange → yellow → green → cyan → blue → purple
+- All stages use RISING_SPIRAL shape
+- Stages overlap for smooth color transitions
 
-СТРУКТУРА:
-Каждый стейдж длится 30 тиков, начинается с интервалом в 10 тиков:
+STRUCTURE:
+Each stage lasts 30 ticks, starting at 10-tick intervals:
 
-Stage 1 (тики 1-30): Красный (255,0,0)
-Stage 2 (тики 10-40): Оранжевый (255,165,0)
-Stage 3 (тики 20-50): Желтый (255,255,0)
-Stage 4 (тики 30-60): Зеленый (0,255,0)
-Stage 5 (тики 40-70): Голубой (0,191,255)
-Stage 6 (тики 50-80): Синий (0,0,255)
-Stage 7 (тики 60-90): Фиолетовый (138,43,226)
+Stage 1 (ticks 1-30): Red (255,0,0)
+Stage 2 (ticks 10-40): Orange (255,165,0)
+Stage 3 (ticks 20-50): Yellow (255,255,0)
+Stage 4 (ticks 30-60): Green (0,255,0)
+Stage 5 (ticks 40-70): Cyan (0,191,255)
+Stage 6 (ticks 50-80): Blue (0,0,255)
+Stage 7 (ticks 60-90): Purple (138,43,226)
 
-Все используют:
-- REDSTONE частицы с isColored: true
-- RISING_SPIRAL форма
+All use:
+- REDSTONE particles with isColored: true
+- RISING_SPIRAL shape
 - count: 3
 - radiusStart: 2.0, radiusEnd: 1.0
 - heightOffsetStart: -0.5, heightOffsetEnd: 2.5
 - particleSize: 1.2
 
-Финал (тики 90-100): Белый взрыв (255,255,255)
-- SPHERE форма
+Finale (ticks 90-100): White explosion (255,255,255)
+- SPHERE shape
 - count: 50
 - radiusStart: 3.0, radiusEnd: 0.5
 ```
 
 ---
 
-## 💡 Советы и трюки
+## 💡 Tips and Tricks
 
-### Новые возможности
+### New Features
 
-1. **Раздевание игрока**
+1. **Stripping the Player**
    ```yaml
    stripPlayer: true
-   itemDropIntervalTicks: 5  # Выкидывать предмет каждые 5 тиков
+   itemDropIntervalTicks: 5  # Drop an item every 5 ticks
    ```
-   - Снимается вся броня сразу
-   - Предметы выкидываются постепенно со звуком подбора
-   - Выпавшие предметы автоматически удаляются после анимации
-   - Инвентарь очищается, чтобы избежать дублирования
+   - All armor is removed immediately
+   - Items are dropped gradually with a pickup sound
+   - Dropped items are automatically removed after the animation
+   - Inventory is cleared to prevent duplication
 
-2. **Кастомная левитация**
+2. **Custom Levitation**
    ```yaml
-   customLevitationAmplifier: 3  # Сильная левитация
-   # -1 = стандартная (1)
-   # 0 = нет левитации
-   # 1-10 = разная сила
+   customLevitationAmplifier: 3  # Strong levitation
+   # -1 = standard (1)
+   # 0 = no levitation
+   # 1-10 = varying strength
    ```
 
-3. **Перемещение игрока**
+3. **Player Movement**
    ```yaml
    movement:
      startTick: 1
      endTick: 60
      offsetX: 0.0
-     offsetY: 5.0  # Поднять на 5 блоков
+     offsetY: 5.0  # Raise by 5 blocks
      offsetZ: 0.0
-     smooth: true  # Плавное перемещение
+     smooth: true  # Smooth movement
    ```
 
-4. **Тайтлы на экране**
+4. **On-screen Titles**
    ```yaml
    titles:
      - showAtTick: 0
-       title: "§c§lВЫ ЗАБАНЕНЫ"
-       subtitle: "§7Причина: читы"
+       title: "§c§lYOU ARE BANNED"
+       subtitle: "§7Reason: cheats"
        fadeIn: 10
        stay: 40
        fadeOut: 10
    ```
-   - Поддержка цветовых кодов (§c = красный, §l = жирный)
-   - Можно несколько тайтлов в одном стейдже
+   - Supports color codes (§c = red, §l = bold)
+   - Multiple titles can be used in one stage
 
-5. **Молнии в процессе**
+5. **Lightning During Animation**
    ```yaml
-   lightningTicks: [10, 30, 50]  # Молнии на 10, 30 и 50 тиках стейджа
+   lightningTicks: [10, 30, 50]  # Lightning at ticks 10, 30, and 50 of the stage
    ```
 
-6. **След из частиц**
+6. **Particle Trail**
    ```yaml
    particleTrail:
      particleType: "REDSTONE"
@@ -442,118 +442,118 @@ Stage 7 (тики 60-90): Фиолетовый (138,43,226)
      offsetZ: 0.3
    ```
 
-### Для создания драматичных анимаций
+### For Creating Dramatic Animations
 
-1. **Используйте нарастание**
+1. **Use Buildup**
    ```yaml
-   Stage 1: Тихое начало (малый радиус, мало частиц)
-   Stage 2: Нарастание (увеличение радиуса и количества)
-   Stage 3: Кульминация (максимум эффектов)
-   Stage 4: Взрыв (EXPLOSION форма)
+   Stage 1: Quiet start (small radius, few particles)
+   Stage 2: Buildup (increasing radius and count)
+   Stage 3: Climax (maximum effects)
+   Stage 4: Explosion (EXPLOSION shape)
    ```
 
-2. **Комбинируйте формы**
+2. **Combine Shapes**
    ```yaml
-   - RISING_SPIRAL для левитации
-   - SPHERE для окружения
-   - EXPLOSION для финала
+   - RISING_SPIRAL for levitation
+   - SPHERE for surrounding
+   - EXPLOSION for the finale
    ```
 
-3. **Используйте звуки для атмосферы**
+3. **Use Sounds for Atmosphere**
    ```yaml
-   - Зацикленные звуки (loop: true) для фона
-   - Одиночные звуки для акцентов
-   - Громкий звук (volume: 2.0) для финала
+   - Looped sounds (loop: true) for background
+   - Single sounds for accents
+   - Loud sound (volume: 2.0) for the finale
    ```
 
-### Для оптимизации производительности
+### For Performance Optimization
 
-1. **Используйте intervalTicks**
+1. **Use intervalTicks**
    ```yaml
-   intervalTicks: 2  # Спавн каждые 2 тика вместо каждого
+   intervalTicks: 2  # Spawn every 2 ticks instead of every tick
    ```
 
-2. **Ограничивайте count**
+2. **Limit count**
    ```yaml
-   count: 20  # Для SPHERE достаточно 20-30 частиц
+   count: 20  # 20-30 particles is enough for SPHERE
    ```
 
-3. **Не перегружайте параллельными стейджами**
+3. **Don't Overload with Parallel Stages**
    ```yaml
-   # Хорошо: 2-3 стейджа одновременно
-   # Плохо: 5+ стейджей одновременно
+   # Good: 2-3 stages simultaneously
+   # Bad: 5+ stages simultaneously
    ```
 
-### Для создания плавных переходов
+### For Creating Smooth Transitions
 
-1. **Пересекайте стейджи**
+1. **Overlap Stages**
    ```yaml
    Stage 1: startTick: 1,  endTick: 60
-   Stage 2: startTick: 40, endTick: 80  # Пересечение на тиках 40-60
+   Stage 2: startTick: 40, endTick: 80  # Overlap at ticks 40-60
    ```
 
-2. **Используйте интерполяцию**
+2. **Use Interpolation**
    ```yaml
    radiusStart: 3.0
    radiusEnd: 1.0
-   # Радиус плавно уменьшается от 3.0 до 1.0
+   # Radius smoothly decreases from 3.0 to 1.0
    ```
 
-3. **Синхронизируйте с звуками**
+3. **Sync with Sounds**
    ```yaml
-   # Звук в момент смены стейджа
-   playAtTick: 0  # Начало стейджа
+   # Sound at the moment of stage change
+   playAtTick: 0  # Start of the stage
    ```
 
-### Цветовые схемы
+### Color Schemes
 
-**Огонь:**
+**Fire:**
 ```yaml
-red: 255, green: 0, blue: 0      # Красный
-red: 255, green: 165, blue: 0    # Оранжевый
-red: 255, green: 255, blue: 0    # Желтый
+red: 255, green: 0, blue: 0      # Red
+red: 255, green: 165, blue: 0    # Orange
+red: 255, green: 255, blue: 0    # Yellow
 ```
 
-**Лед:**
+**Ice:**
 ```yaml
-red: 0, green: 191, blue: 255    # Голубой
-red: 173, green: 216, blue: 230  # Светло-синий
-red: 255, green: 255, blue: 255  # Белый
+red: 0, green: 191, blue: 255    # Cyan
+red: 173, green: 216, blue: 230  # Light blue
+red: 255, green: 255, blue: 255  # White
 ```
 
-**Магия:**
+**Magic:**
 ```yaml
-red: 138, green: 43, blue: 226   # Фиолетовый
-red: 255, green: 0, blue: 255    # Пурпурный
-red: 255, green: 105, blue: 180  # Розовый
+red: 138, green: 43, blue: 226   # Purple
+red: 255, green: 0, blue: 255    # Magenta
+red: 255, green: 105, blue: 180  # Pink
 ```
 
-**Природа:**
+**Nature:**
 ```yaml
-red: 0, green: 255, blue: 0      # Зеленый
-red: 139, green: 69, blue: 19    # Коричневый
-red: 34, green: 139, blue: 34    # Темно-зеленый
+red: 0, green: 255, blue: 0      # Green
+red: 139, green: 69, blue: 19    # Brown
+red: 34, green: 139, blue: 34    # Dark green
 ```
 
-**Космос:**
+**Space:**
 ```yaml
-red: 0, green: 0, blue: 139      # Темно-синий
-red: 138, green: 43, blue: 226   # Фиолетовый
-red: 255, green: 255, blue: 255  # Белый (звезды)
+red: 0, green: 0, blue: 139      # Dark blue
+red: 138, green: 43, blue: 226   # Purple
+red: 255, green: 255, blue: 255  # White (stars)
 ```
 
 ---
 
-## 🎯 Примеры генерации
+## 🎯 Generation Examples
 
-### Пример 1: Простой промпт → Результат
+### Example 1: Simple Prompt → Result
 
-**Промпт:**
+**Prompt:**
 ```
-Создай простую огненную анимацию на 3 секунды с восходящей спиралью
+Create a simple fire animation for 3 seconds with an ascending spiral
 ```
 
-**Результат AI:**
+**AI Result:**
 ```yaml
 totalTicks: 60
 freezePlayer: true
@@ -575,23 +575,23 @@ stages:
         speed: 0.02
 ```
 
-### Пример 2: Сложный промпт → Результат
+### Example 2: Complex Prompt → Result
 
-**Промпт:**
+**Prompt:**
 ```
-Создай драматичную анимацию на 6 секунд:
-1. Начало: фиолетовая двойная спираль (тики 1-40)
-2. Середина: красная сжимающаяся сфера (тики 30-100)
-3. Финал: белый взрыв (тики 100-120)
-Добавь зацикленный портальный звук и финальный взрыв
-Раздеть игрока и выкидывать предметы каждые 8 тиков
-Поднять игрока на 3 блока плавно
-Фиолетовый след за игроком
-Тайтлы "ВНИМАНИЕ" и "ЗАБАНЕН"
-Молнии на тиках [10, 30, 50] во втором стейдже
+Create a dramatic animation for 6 seconds:
+1. Start: purple double helix (ticks 1-40)
+2. Middle: red contracting sphere (ticks 30-100)
+3. Finale: white explosion (ticks 100-120)
+Add a looped portal sound and a final explosion
+Strip the player and drop items every 8 ticks
+Smoothly raise the player by 3 blocks
+Purple trail behind the player
+Titles "WARNING" and "BANNED"
+Lightning at ticks [10, 30, 50] in the second stage
 ```
 
-**Результат AI:**
+**AI Result:**
 ```yaml
 totalTicks: 120
 freezePlayer: true
@@ -637,8 +637,8 @@ stages:
         loopIntervalTicks: 10
     titles:
       - showAtTick: 0
-        title: "§5§lВНИМАНИЕ"
-        subtitle: "§7Обнаружены читы"
+        title: "§5§lWARNING"
+        subtitle: "§7Cheats detected"
         fadeIn: 10
         stay: 30
         fadeOut: 10
@@ -676,8 +676,8 @@ stages:
     lightningTicks: [10, 30, 50]
     titles:
       - showAtTick: 20
-        title: "§c§lПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ"
-        subtitle: "§7Бан через 3 секунды..."
+        title: "§c§lLAST WARNING"
+        subtitle: "§7Ban in 3 seconds..."
         fadeIn: 5
         stay: 60
         fadeOut: 5
@@ -708,8 +708,8 @@ stages:
         loop: false
     titles:
       - showAtTick: 0
-        title: "§4§l§nЗАБАНЕН"
-        subtitle: "§cДо свидания!"
+        title: "§4§l§nBANNED"
+        subtitle: "§cGoodbye!"
         fadeIn: 5
         stay: 20
         fadeOut: 5
@@ -717,154 +717,154 @@ stages:
 
 ---
 
-## 🔧 Шаблон для AI
+## 🔧 AI Template
 
-Используйте этот шаблон для генерации любой анимации:
+Use this template to generate any animation:
 
 ```
-Создай YAML конфигурацию анимации бана для Minecraft плагина ZeyronAC.
+Create a YAML ban animation configuration for the ZeyronAC Minecraft plugin.
 
-ПАРАМЕТРЫ:
-- Тема: [ваша тема]
-- Длительность: [секунды] секунд ([секунды * 20] тиков)
-- Настроение: [драматичное/спокойное/агрессивное/мистическое]
-- Цвета: [RGB или названия]
-- Формы: [SPHERE/SPIRAL/EXPLOSION/HELIX/CIRCLE]
-- Звуки: [да/нет]
-- Раздеть игрока: [да/нет]
-- Тыква на голову: [да/нет]
-- Перемещение: [да/нет, куда]
-- Тайтлы: [да/нет, какие]
-- След из частиц: [да/нет]
+PARAMETERS:
+- Theme: [your theme]
+- Duration: [seconds] seconds ([seconds * 20] ticks)
+- Mood: [dramatic/calm/aggressive/mystical]
+- Colors: [RGB or names]
+- Shapes: [SPHERE/SPIRAL/EXPLOSION/HELIX/CIRCLE]
+- Sounds: [yes/no]
+- Strip player: [yes/no]
+- Pumpkin on head: [yes/no]
+- Movement: [yes/no, where]
+- Titles: [yes/no, which]
+- Particle trail: [yes/no]
 
-СТРУКТУРА:
-totalTicks: [длительность * 20]
+STRUCTURE:
+totalTicks: [duration * 20]
 freezePlayer: true
 strikeLightningAtEnd: [true/false]
 
-# Новые параметры
+# New parameters
 stripPlayer: [true/false]
-itemDropIntervalTicks: [интервал]
+itemDropIntervalTicks: [interval]
 pumpkinHead: [true/false]
-pumpkinHeadTick: [тик]
-customLevitationAmplifier: [сила]
+pumpkinHeadTick: [tick]
+customLevitationAmplifier: [strength]
 
-# Перемещение (опционально)
+# Movement (optional)
 movement:
-  startTick: [начало]
-  endTick: [конец]
-  offsetX: [смещение X]
-  offsetY: [смещение Y]
-  offsetZ: [смещение Z]
+  startTick: [start]
+  endTick: [end]
+  offsetX: [X offset]
+  offsetY: [Y offset]
+  offsetZ: [Z offset]
   smooth: [true/false]
 
 stages:
-  - name: "[название стейджа 1]"
-    startTick: [начало]
-    endTick: [конец]
+  - name: "[stage 1 name]"
+    startTick: [start]
+    endTick: [end]
     particles:
-      - particleType: "[тип]"
-        shape: "[форма]"
-        intervalTicks: [интервал]
-        count: [количество]
-        radiusStart: [начальный радиус]
-        radiusEnd: [конечный радиус]
-        heightOffsetStart: [начальная высота]
-        heightOffsetEnd: [конечная высота]
+      - particleType: "[type]"
+        shape: "[shape]"
+        intervalTicks: [interval]
+        count: [count]
+        radiusStart: [start radius]
+        radiusEnd: [end radius]
+        heightOffsetStart: [start height]
+        heightOffsetEnd: [end height]
         isColored: [true/false]
         red: [0-255]
         green: [0-255]
         blue: [0-255]
-        particleSize: [размер]
-        speed: [скорость]
+        particleSize: [size]
+        speed: [speed]
     sounds:
-      - soundType: "[звук]"
-        playAtTick: [тик]
-        volume: [громкость]
-        pitch: [тон]
+      - soundType: "[sound]"
+        playAtTick: [tick]
+        volume: [volume]
+        pitch: [pitch]
         loop: [true/false]
-        loopIntervalTicks: [интервал]
+        loopIntervalTicks: [interval]
     titles:
-      - showAtTick: [тик]
-        title: "[заголовок]"
-        subtitle: "[подзаголовок]"
-        fadeIn: [появление]
-        stay: [показ]
-        fadeOut: [исчезновение]
-    lightningTicks: [[тик1, тик2, тик3]]
+      - showAtTick: [tick]
+        title: "[title]"
+        subtitle: "[subtitle]"
+        fadeIn: [fade-in]
+        stay: [display]
+        fadeOut: [fade-out]
+    lightningTicks: [[tick1, tick2, tick3]]
     particleTrail:
-      particleType: "[тип]"
-      intervalTicks: [интервал]
-      count: [количество]
+      particleType: "[type]"
+      intervalTicks: [interval]
+      count: [count]
       isColored: [true/false]
       red: [0-255]
       green: [0-255]
       blue: [0-255]
-      particleSize: [размер]
-      offsetX: [разброс]
-      offsetY: [разброс]
-      offsetZ: [разброс]
+      particleSize: [size]
+      offsetX: [spread]
+      offsetY: [spread]
+      offsetZ: [spread]
 
-ТРЕБОВАНИЯ:
-- Используй формат YAML
-- Все значения должны быть валидными
-- Стейджи могут пересекаться по времени
-- Используй линейную интерполяцию для плавных переходов
-- Добавь тайтлы для драматичности
-- Используй след из частиц для красоты
+REQUIREMENTS:
+- Use YAML format
+- All values must be valid
+- Stages can overlap in time
+- Use linear interpolation for smooth transitions
+- Add titles for drama
+- Use particle trails for beauty
 ```
 
 ---
 
-## 📚 Дополнительные ресурсы
+## 📚 Additional Resources
 
-- **Примеры анимаций**: `plugins/ZeyronAC/animations/`
-- **Документация движка**: `src/main/java/com/zeyronac/penalty/engine/README.md`
-- **Список частиц**: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
-- **Список звуков**: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
+- **Animation examples**: `plugins/ZeyronAC/animations/`
+- **Engine documentation**: `src/main/java/com/zeyronac/penalty/engine/README.md`
+- **Particle list**: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
+- **Sound list**: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
 
 ---
 
-**Создано для ZeyronAC Animation Engine v2.0**
+**Created for ZeyronAC Animation Engine v2.0**
 **© 2026 ZeyronAC Team**
 
 ---
 
-## 🎬 Примеры готовых анимаций
+## 🎬 Ready-made Animation Examples
 
 ### classic_ban.yml
-Классическая анимация с левитацией и сферой. Простая и элегантная.
-- Длительность: 4 секунды
-- След из частиц за игроком
-- Тайтл "ВЫ ЗАБАНЕНЫ"
+Classic animation with levitation and sphere. Simple and elegant.
+- Duration: 4 seconds
+- Particle trail behind the player
+- Title "YOU ARE BANNED"
 
 ### dramatic_ban.yml
-Драматичная анимация с полным набором эффектов.
-- Длительность: 6 секунд
-- Раздевание игрока (stripPlayer: true)
-- Перемещение вверх на 3 блока
-- Множественные молнии
-- Красный след за игроком
-- Тайтлы с предупреждениями
+Dramatic animation with a full set of effects.
+- Duration: 6 seconds
+- Player stripping (stripPlayer: true)
+- Upward movement by 3 blocks
+- Multiple lightning strikes
+- Red trail behind the player
+- Warning titles
 
 ### rainbow_ban.yml
-Радужная анимация с цветными спиралями.
-- Длительность: 5 секунд
-- Параллельные цветные стейджи
-- Тайтлы с названиями цветов
-- Радужный след за игроком
+Rainbow animation with colored spirals.
+- Duration: 5 seconds
+- Parallel colored stages
+- Titles with color names
+- Rainbow trail behind the player
 
 ### ultimate_ban.yml
-Ультимативная анимация - демонстрация всех возможностей движка.
-- Длительность: 7 секунд
-- Все новые функции включены
-- 4 параллельных стейджа
-- Раздевание игрока каждые 6 тиков
-- Сильная левитация (amplifier: 3)
-- Плавное перемещение на 4 блока вверх
-- Множественные тайтлы с анимацией
-- 6 ударов молнии в процессе
-- Цветные следы за игроком (желтый → фиолетовый → красный)
-- Финальный двойной взрыв
+Ultimate animation - a showcase of all engine capabilities.
+- Duration: 7 seconds
+- All new features enabled
+- 4 parallel stages
+- Player stripping every 6 ticks
+- Strong levitation (amplifier: 3)
+- Smooth upward movement by 4 blocks
+- Multiple animated titles
+- 6 lightning strikes during the animation
+- Colored trails behind the player (yellow → purple → red)
+- Final double explosion
 
-Используйте эти анимации как примеры для создания своих собственных!
+Use these animations as examples to create your own!

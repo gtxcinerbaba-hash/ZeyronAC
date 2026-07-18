@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 
@@ -47,4 +47,18 @@ public interface ISessionManager {
     String getCurrentSessionFolder();
     void onAttack(Player player);
     void onTick(Player player, float yaw, float pitch);
+
+    /**
+     * Oyuncu sunucudan ayrildiginda cagrilir. Aktif kayit varsa 5 dakikalik
+     * geri sayim baslatir; oyuncu geri gelmezse session save edilir.
+     */
+    void handlePlayerDisconnect(Player player);
+
+    /**
+     * Oyuncu sunucuya tekrar katildiginda cagrilir. Hala bekleyen aktif
+     * session varsa otomatik resume edilir.
+     *
+     * @return Resume edilen session, yoksa null.
+     */
+    DataSession resumeSession(Player player);
 }

@@ -1,6 +1,6 @@
-﻿/*
+/*
  * Copyright (C) 2026 ZeyronAC Team
- * MLSAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
+ * ZeyronAC is a GPLv3 licensed fork of a Minecraft anti-cheat system.
  * This project is community-maintained and not affiliated with any single upstream repository.
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  *   - MLSAC (GPLv3: https://github.com/SoMax1soft/mls-network-plugin)
  *
  * Modifications:
- *   - Modified by SoMax1soft for the MLSAC.NET project in 2026.
+ *   - Modified by SoMax1soft for the ZeyronAC.com project in 2026.
  */
 
 package com.zeyronac.penalty.engine;
@@ -33,12 +33,12 @@ import org.bukkit.Sound;
 import com.zeyronac.compat.ParticleCompat;
 
 /**
- * Пресеты анимаций для быстрого создания конфигураций
+ * Animation presets for quick configuration creation
  */
 public class AnimationPresets {
 
     /**
-     * Классическая анимация бана с левитацией и сферой
+     * Classic ban animation with levitation and sphere
      */
     public static BanAnimationConfig createClassicBanAnimation() {
         BanAnimationConfig config = new BanAnimationConfig();
@@ -46,7 +46,7 @@ public class AnimationPresets {
         config.freezePlayer = true;
         config.strikeLightningAtEnd = true;
 
-        // Stage 1: Левитация с восходящей спиралью (тики 1-60)
+        // Stage 1: Levitation with ascending spiral (ticks 1-60)
         BanAnimationConfig.StageConfig stage1 = new BanAnimationConfig.StageConfig();
         stage1.name = "Levitation";
         stage1.startTick = 1;
@@ -66,7 +66,7 @@ public class AnimationPresets {
 
         config.stages.add(stage1);
 
-        // Stage 2: Сжимающаяся сфера (тики 20-75)
+        // Stage 2: Contracting sphere (ticks 20-75)
         BanAnimationConfig.StageConfig stage2 = new BanAnimationConfig.StageConfig();
         stage2.name = "Sphere";
         stage2.startTick = 20;
@@ -84,7 +84,7 @@ public class AnimationPresets {
         sphere.speed = 0.0;
         stage2.particles.add(sphere);
 
-        // Добавляем розовую пыль в сферу
+        // Add pink dust to the sphere
         BanAnimationConfig.ParticleEffectConfig dust = new BanAnimationConfig.ParticleEffectConfig();
         dust.particleType = ParticleCompat.getDustParticle();
         dust.shape = "SPHERE";
@@ -104,7 +104,7 @@ public class AnimationPresets {
 
         config.stages.add(stage2);
 
-        // Stage 3: Взрыв (тик 80)
+        // Stage 3: Explosion (tick 80)
         BanAnimationConfig.StageConfig stage3 = new BanAnimationConfig.StageConfig();
         stage3.name = "Explosion";
         stage3.startTick = 80;
@@ -128,7 +128,7 @@ public class AnimationPresets {
     }
 
     /**
-     * Драматичная анимация с огнем и дымом
+     * Dramatic animation with fire and smoke
      */
     public static BanAnimationConfig createFireBanAnimation() {
         BanAnimationConfig config = new BanAnimationConfig();
@@ -136,7 +136,7 @@ public class AnimationPresets {
         config.freezePlayer = true;
         config.strikeLightningAtEnd = true;
 
-        // Stage 1: Огненная спираль
+        // Stage 1: Fire spiral
         BanAnimationConfig.StageConfig stage1 = new BanAnimationConfig.StageConfig();
         stage1.name = "Fire Spiral";
         stage1.startTick = 1;
@@ -154,7 +154,7 @@ public class AnimationPresets {
         fireSpiral.speed = 0.02;
         stage1.particles.add(fireSpiral);
 
-        // Добавляем дым
+        // Add smoke
         BanAnimationConfig.ParticleEffectConfig smoke = new BanAnimationConfig.ParticleEffectConfig();
         smoke.particleType = Particle.SMOKE_LARGE;
         smoke.shape = "POINT";
@@ -169,7 +169,7 @@ public class AnimationPresets {
 
         config.stages.add(stage1);
 
-        // Stage 2: Огненная сфера
+        // Stage 2: Fire sphere
         BanAnimationConfig.StageConfig stage2 = new BanAnimationConfig.StageConfig();
         stage2.name = "Fire Sphere";
         stage2.startTick = 40;
@@ -189,7 +189,7 @@ public class AnimationPresets {
 
         config.stages.add(stage2);
 
-        // Stage 3: Взрыв лавы
+        // Stage 3: Lava explosion
         BanAnimationConfig.StageConfig stage3 = new BanAnimationConfig.StageConfig();
         stage3.name = "Lava Explosion";
         stage3.startTick = 100;
@@ -213,7 +213,7 @@ public class AnimationPresets {
     }
 
     /**
-     * Мистическая анимация с порталом Края
+     * Mystical animation with End portal
      */
     public static BanAnimationConfig createEnderBanAnimation() {
         BanAnimationConfig config = new BanAnimationConfig();
@@ -221,7 +221,7 @@ public class AnimationPresets {
         config.freezePlayer = true;
         config.strikeLightningAtEnd = false;
 
-        // Stage 1: Частицы портала
+        // Stage 1: Portal particles
         BanAnimationConfig.StageConfig stage1 = new BanAnimationConfig.StageConfig();
         stage1.name = "Portal Opening";
         stage1.startTick = 1;
@@ -241,7 +241,7 @@ public class AnimationPresets {
 
         config.stages.add(stage1);
 
-        // Stage 2: Частицы Края
+        // Stage 2: End particles
         BanAnimationConfig.StageConfig stage2 = new BanAnimationConfig.StageConfig();
         stage2.name = "Ender Vortex";
         stage2.startTick = 30;
@@ -261,7 +261,7 @@ public class AnimationPresets {
 
         config.stages.add(stage2);
 
-        // Stage 3: Телепортация
+        // Stage 3: Teleportation
         BanAnimationConfig.StageConfig stage3 = new BanAnimationConfig.StageConfig();
         stage3.name = "Teleport";
         stage3.startTick = 90;
@@ -285,7 +285,7 @@ public class AnimationPresets {
     }
 
     /**
-     * Радужная анимация с цветными частицами
+     * Rainbow animation with colored particles
      */
     public static BanAnimationConfig createRainbowBanAnimation() {
         BanAnimationConfig config = new BanAnimationConfig();
@@ -293,19 +293,19 @@ public class AnimationPresets {
         config.freezePlayer = true;
         config.strikeLightningAtEnd = true;
 
-        // Stage 1: Красная спираль
+        // Stage 1: Red spiral
         addColoredSpiralStage(config, "Red Spiral", 1, 30, 255, 0, 0);
         
-        // Stage 2: Оранжевая спираль (параллельно)
+        // Stage 2: Orange spiral (parallel)
         addColoredSpiralStage(config, "Orange Spiral", 20, 50, 255, 165, 0);
         
-        // Stage 3: Желтая спираль (параллельно)
+        // Stage 3: Yellow spiral (parallel)
         addColoredSpiralStage(config, "Yellow Spiral", 40, 70, 255, 255, 0);
         
-        // Stage 4: Зеленая спираль (параллельно)
+        // Stage 4: Green spiral (parallel)
         addColoredSpiralStage(config, "Green Spiral", 60, 90, 0, 255, 0);
         
-        // Stage 5: Синяя сфера
+        // Stage 5: Blue sphere
         BanAnimationConfig.StageConfig blueSphere = new BanAnimationConfig.StageConfig();
         blueSphere.name = "Blue Sphere";
         blueSphere.startTick = 70;
@@ -334,7 +334,7 @@ public class AnimationPresets {
     }
 
     /**
-     * Вспомогательный метод для создания цветной спирали
+     * Helper method for creating a colored spiral
      */
     private static void addColoredSpiralStage(BanAnimationConfig config, String name, 
                                              int start, int end, int r, int g, int b) {
@@ -364,7 +364,7 @@ public class AnimationPresets {
     }
 
     /**
-     * Драматичная анимация с ДНК-спиралью и звуками
+     * Dramatic animation with DNA helix and sounds
      */
     public static BanAnimationConfig createDramaticBanAnimation() {
         BanAnimationConfig config = new BanAnimationConfig();
@@ -372,7 +372,7 @@ public class AnimationPresets {
         config.freezePlayer = true;
         config.strikeLightningAtEnd = true;
 
-        // Stage 1: Нарастающий гул
+        // Stage 1: Building hum
         BanAnimationConfig.StageConfig stage1 = new BanAnimationConfig.StageConfig();
         stage1.name = "Build Up";
         stage1.startTick = 1;
@@ -401,7 +401,7 @@ public class AnimationPresets {
 
         config.stages.add(stage1);
 
-        // Stage 2: Кульминация
+        // Stage 2: Climax
         BanAnimationConfig.StageConfig stage2 = new BanAnimationConfig.StageConfig();
         stage2.name = "Climax";
         stage2.startTick = 40;
@@ -434,7 +434,7 @@ public class AnimationPresets {
 
         config.stages.add(stage2);
 
-        // Stage 3: Финальный взрыв
+        // Stage 3: Final explosion
         BanAnimationConfig.StageConfig stage3 = new BanAnimationConfig.StageConfig();
         stage3.name = "Final Explosion";
         stage3.startTick = 100;
