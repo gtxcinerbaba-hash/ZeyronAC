@@ -75,7 +75,10 @@ public final class SecurityUtil {
         return cleaned.isEmpty() ? "unknown" : cleaned;
     }
 
-    /** Strips control characters and truncates text that will be echoed to chat or console. */
+    /**
+     * Strips control characters (C0/C1), RTL/LTR overrides, zero-width chars, BOM,
+     * line/paragraph separators and other Unicode pitfalls that can spoof chat/console logs.
+     */
     public static String sanitizeChatText(String text, int maxLength) {
         if (text == null) {
             return "";
@@ -83,9 +86,31 @@ public final class SecurityUtil {
         StringBuilder sb = new StringBuilder(Math.min(text.length(), maxLength));
         for (int i = 0; i < text.length() && sb.length() < maxLength; i++) {
             char c = text.charAt(i);
-            if (c >= 0x20 && c != 0x7F) {
-                sb.append(c);
+            // Reject C0 (U+0000-U+001F), DEL (U+007F), C1 (U+0080-U+009F)
+            if (c <= 0x1F || c == 0x7F || (c >= 0x80 && c <= 0x9F)) {
+                continue;
             }
+            // Reject Unicode hazards: BOM, zero-width, RTL/LTR overrides, separators
+            if (c == 0xFEFF                            // BOM
+                    || c == 0x200B                     // ZERO WIDTH SPACE
+                    || c == 0x200C                     // ZERO WIDTH NON-JOINER
+                    || c == 0x200D                     // ZERO WIDTH JOINER
+                    || c == 0x200E                     // LEFT-TO-RIGHT MARK
+                    || c == 0x200F                     // RIGHT-TO-LEFT MARK
+                    || c == 0x2028                     // LINE SEPARATOR
+                    || c == 0x2029                     // PARAGRAPH SEPARATOR
+                    || c == 0x202A                     // LRE
+                    || c == 0x202B                     // RLE
+                    || c == 0x202C                     // PDF
+                    || c == 0x202D                     // LRO
+                    || c == 0x202E                     // RLO
+                    || c == 0x2060                     // WORD JOINER
+                    || c == 0x2061                     // FUNCTION APPLICATION
+                    || c == 0x2062                     // INVISIBLE TIMES
+                    || c == 0x2063) {                  // INVISIBLE SEPARATOR
+                continue;
+            }
+            sb.append(c);
         }
         return sb.toString();
     }

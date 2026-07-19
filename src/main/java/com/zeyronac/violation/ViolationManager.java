@@ -304,7 +304,10 @@ public class ViolationManager {
         addKickRecord(new KickRecord(player.getName(), probability, buffer, vl, command));
         penaltyExecutor.execute(command, context);
         if (isPunishingAction(command, actionType)) {
-            reportPunish(player, probability, buffer, vl, actionType.name().toLowerCase(Locale.ROOT), command);
+            // Send only the action type to the backend, never the raw console command:
+            // the command template is a private penalty policy of this server and may
+            // reveal custom/internal scripts. Backend only needs the action classification.
+            reportPunish(player, probability, buffer, vl, actionType.name().toLowerCase(Locale.ROOT), actionType.name());
         }
     }
 

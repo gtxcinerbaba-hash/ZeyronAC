@@ -105,9 +105,10 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         Set<String> alertsOrAdmin = Set.of(Permissions.ALERTS, Permissions.ADMIN);
         Set<String> probOrAdmin = Set.of(Permissions.PROB, Permissions.ADMIN);
         Set<String> reloadOrAdmin = Set.of(Permissions.RELOAD, Permissions.ADMIN);
+        Set<String> collectOrAdmin = Set.of(Permissions.COLLECT, Permissions.ADMIN);
 
-        // Data collection commands are intentionally permission-less (legacy behavior preserved).
-        register("record", Set.of(), false, this::handleRecord);
+        // Data collection commands require admin or zeyronac.collect permission.
+        register("record", collectOrAdmin, false, this::handleRecord);
 
         register("alerts", alertsOrAdmin, true, (sender, args) -> handleAlerts(sender));
         register("monitor", alertsOrAdmin, true, (sender, args) -> handleMonitor(sender));
@@ -206,7 +207,9 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             return;
         }
         String playerName = args[1];
-        Player target = Bukkit.getPlayer(playerName);
+        // Exact-name lookup only: prefix matching could resolve a mistyped name to an
+        // unrelated online player and silently start tracking the wrong account.
+        Player target = Bukkit.getPlayerExact(playerName);
         if (target == null) {
             admin.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", playerName));
             return;
@@ -368,7 +371,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         }
 
         String targetName = args[2];
-        Player target = Bukkit.getPlayer(targetName);
+        // Exact-name lookup only - prefix matching can restore data for the wrong player.
+        Player target = Bukkit.getPlayerExact(targetName);
         if (target == null) {
             sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", targetName));
             return;
@@ -434,7 +438,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             sender.sendMessage(getPrefix() + msg("usage-profile"));
             return;
         }
-        Player target = Bukkit.getPlayer(args[1]);
+        // Exact-name lookup only - prevents accidental key/prefix matches.
+        Player target = Bukkit.getPlayerExact(args[1]);
         if (target == null) {
             sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", args[1]));
             return;
@@ -674,7 +679,13 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> completions = new ArrayList<>();
         if (args.length == 1) {
-            completions.addAll(filterStartsWith(new ArrayList<>(subCommands.keySet()), args[0]));
+            // 1. seviye: sadece yetkisi olan subcommand'lari Oner
+            String prefix = args[0].toLowerCase();
+            for (Map.Entry<String, SubCommand> entry : subCommands.entrySet()) {
+                if (entry.getKey().startsWith(prefix) && hasAnyPermission(sender, entry.getValue().anyPermission)) {
+                    completions.add(entry.getKey());
+                }
+            }
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
             if (Arrays.asList("prob", "punish", "profile").contains(subCommand)) {
@@ -881,7 +892,8 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         String playerName = args[2];
         String animationName = args[3];
 
-        Player target = Bukkit.getPlayer(playerName);
+        // Exact-name lookup - animation test must target the intended player only.
+        Player target = Bukkit.getPlayerExact(playerName);
         if (target == null) {
             sender.sendMessage(getPrefix() + msg("player-not-found", "{PLAYER}", playerName));
             return;

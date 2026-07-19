@@ -33,6 +33,7 @@ import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import com.zeyronac.Main;
+import com.zeyronac.util.SecurityUtil;
 import com.zeyronac.Permissions;
 import com.zeyronac.alert.AlertManager;
 import com.zeyronac.scheduler.SchedulerManager;
@@ -41,6 +42,7 @@ import com.zeyronac.util.SecurityUtil;
 import java.io.BufferedReader;
 import java.util.Locale;
 import java.io.IOException;
+import java.net.Proxy;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -144,6 +146,9 @@ public class HttpAIClient implements IAIClient {
                 .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(false)
+                // Never route AI backend traffic through a system proxy: the license key is sent
+                // in the X-API-Key header and must not leak through untrusted proxies.
+                .proxy(Proxy.NO_PROXY)
                 .addInterceptor(chain -> {
                     Request original = chain.request();
                     Request.Builder builder = original.newBuilder()
@@ -293,12 +298,15 @@ public class HttpAIClient implements IAIClient {
                     ResponseBody respBody = response.body();
                     String responseBody = respBody != null ? respBody.string() : "";
                     if (debug) {
-                        logger.info("[HTTP] /init response: " + code + " body=" + responseBody);
+                        // Sanitize backend-controlled body before logging it (log injection safeguard).
+                        logger.info("[HTTP] /init response: " + code + " body="
+                                + SecurityUtil.sanitizeChatText(responseBody, 256));
                     }
                     if (code == 401 || code == 403) {
                         logger.severe("[HTTP] Authentication failed! API key is invalid, expired, or corrupted. Please check your API key in config.yml");
                         if (debug) {
-                            logger.info("[HTTP] /init auth failure body: " + responseBody);
+                            logger.info("[HTTP] /init auth failure body: "
+                                    + SecurityUtil.sanitizeChatText(responseBody, 256));
                         }
                         connected.set(false);
                         return false;
@@ -733,7 +741,8 @@ public class HttpAIClient implements IAIClient {
                         break;
                     }
                     if ("error".equalsIgnoreCase(type)) {
-                        if (debug) logger.warning("[HTTP] Streaming model error: " + line);
+                        if (debug) logger.warning("[HTTP] Streaming model error: "
+                                + SecurityUtil.sanitizeChatText(line, 256));
                         continue;
                     }
                     AIResponse aiResponse = JsonSupport.parsePredictResponse(line);

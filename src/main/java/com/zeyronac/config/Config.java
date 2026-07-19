@@ -230,8 +230,19 @@ public class Config {
                 config.getBoolean("ai.enabled", DEFAULT_AI_ENABLED));
         this.aiApiKey = config.getString("detection.api-key",
                 config.getString("ai.api-key", DEFAULT_AI_API_KEY));
-        this.licenseKey = config.getString("detection.license-key",
-                config.getString("ai.license-key", DEFAULT_LICENSE_KEY));
+        // License key: prefer config, but allow secure injection via ZEYRONAC_LICENSE env var
+        // or Java system property (-Dzeyronac.license=...). This avoids storing the license
+        // in plaintext inside config.yml on shared/multi-admin servers.
+        String envLicense = System.getenv("ZEYRONAC_LICENSE");
+        if (envLicense == null || envLicense.trim().isEmpty()) {
+            envLicense = System.getProperty("zeyronac.license");
+        }
+        if (envLicense != null && !envLicense.trim().isEmpty()) {
+            this.licenseKey = envLicense.trim();
+        } else {
+            this.licenseKey = config.getString("detection.license-key",
+                    config.getString("ai.license-key", DEFAULT_LICENSE_KEY));
+        }
         double alertThreshold = config.getDouble("alerts.threshold",
                 config.getDouble("ai.alert.threshold", DEFAULT_AI_ALERT_THRESHOLD));
         this.aiAlertThreshold = clampThreshold(alertThreshold, "alerts.threshold", logger);
