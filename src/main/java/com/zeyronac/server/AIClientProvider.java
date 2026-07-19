@@ -69,28 +69,27 @@ public class AIClientProvider {
 
         return shutdown().thenCompose(v -> {
             String serverAddress = config.getServerAddress();
-            String apiKey = config.getAiApiKey();
+            String licenseKey = config.getLicenseKey();
 
             if (serverAddress == null || serverAddress.isEmpty()) {
                 logger.warning("[AI] Server address is not configured!");
                 return CompletableFuture.completedFuture(false);
             }
-            if (apiKey == null || apiKey.isEmpty()) {
-                logger.warning("[AI] API key is not configured!");
+            if (licenseKey == null || licenseKey.isEmpty()) {
+                logger.warning("[AI] License key is not configured!");
                 return CompletableFuture.completedFuture(false);
             }
 
             connecting = true;
 
-            return initializeHttpClient(serverAddress, apiKey);
+            return initializeHttpClient(serverAddress);
         });
     }
 
-    private CompletableFuture<Boolean> initializeHttpClient(String serverAddress, String apiKey) {
+    private CompletableFuture<Boolean> initializeHttpClient(String serverAddress) {
         HttpAIClient httpClient = new HttpAIClient(
                 plugin,
                 serverAddress,
-                apiKey,
                 () -> onlinePlayers.size(),
                 config.isDebug(),
                 config.getServerIdentityName(),

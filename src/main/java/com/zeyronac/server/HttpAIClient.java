@@ -76,7 +76,6 @@ public class HttpAIClient implements IAIClient {
 
     private final Main plugin;
     private final String serverAddress;
-    private final String apiKey;
     private final Logger logger;
     private final boolean debug;
     private final PayloadFactory payloads;
@@ -108,19 +107,18 @@ public class HttpAIClient implements IAIClient {
     private final AtomicInteger reconnectAttempts = new AtomicInteger();
     private final AtomicInteger inFlightPredicts = new AtomicInteger();
 
-    public HttpAIClient(Main plugin, String serverAddress, String apiKey,
+    public HttpAIClient(Main plugin, String serverAddress,
                         IntSupplier onlinePlayersSupplier, boolean debug) {
-        this(plugin, serverAddress, apiKey, onlinePlayersSupplier, debug,
+        this(plugin, serverAddress, onlinePlayersSupplier, debug,
                 "default", "default", false, true, 0.75);
     }
 
-    public HttpAIClient(Main plugin, String serverAddress, String apiKey,
+    public HttpAIClient(Main plugin, String serverAddress,
                         IntSupplier onlinePlayersSupplier, boolean debug,
                         String serverName, String serverFamily, boolean interServerEnabled,
                         boolean eventReportingEnabled, double apiAlertEventThreshold) {
         this.plugin = plugin;
         this.serverAddress = serverAddress;
-        this.apiKey = apiKey;
         this.logger = plugin.getLogger();
         this.debug = debug;
         if (serverAddress != null && serverAddress.toLowerCase(Locale.ROOT).startsWith("http://")
@@ -283,7 +281,6 @@ public class HttpAIClient implements IAIClient {
 
                 String initUrl = serverAddress + "/api/v1/init";
                 JsonObject initJson = payloads.base();
-                initJson.addProperty("apiKey", apiKey);
                 payloads.addOnline(initJson);
                 RequestBody initBody = jsonBody(initJson);
                 Request initRequest = new Request.Builder()
@@ -434,7 +431,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(body)
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -511,7 +507,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(body)
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -560,7 +555,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(jsonBody(json))
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -596,7 +590,6 @@ public class HttpAIClient implements IAIClient {
         Request request = new Request.Builder()
                 .url(url)
                 .post(jsonBody(json))
-                .header("X-API-Key", apiKey)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -704,7 +697,6 @@ public class HttpAIClient implements IAIClient {
         Request request = new Request.Builder()
                 .url(url)
                 .post(jsonBody(json))
-                .header("X-API-Key", apiKey)
                 .build();
 
         try (Response response = httpClient.newCall(request).execute()) {
@@ -801,7 +793,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(jsonBody(json))
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -966,7 +957,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(body)
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 try (Response response = httpClient.newCall(request).execute()) {
@@ -999,7 +989,6 @@ public class HttpAIClient implements IAIClient {
                 Request request = new Request.Builder()
                         .url(url)
                         .post(body)
-                        .header("X-API-Key", apiKey)
                         .build();
 
                 long start = System.currentTimeMillis();

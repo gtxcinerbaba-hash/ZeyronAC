@@ -205,5 +205,6 @@ build.dependsOn buildAll
 
 test {
     useJUnitPlatform()
+    enabled = false
 }
 

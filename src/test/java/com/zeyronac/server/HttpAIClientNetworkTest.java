@@ -43,6 +43,8 @@ import com.zeyronac.scheduler.SchedulerAdapter;
 import com.zeyronac.scheduler.SchedulerManager;
 import com.zeyronac.scheduler.ServerType;
 
+import com.zeyronac.config.Config;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
@@ -106,7 +108,7 @@ class HttpAIClientNetworkTest {
         backend.start();
 
         client = new HttpAIClient(mockPlugin(), "http://127.0.0.1:" + backend.getAddress().getPort(),
-                "test-key", () -> 3, false, "test-server", "test-family", false, false, 0.75);
+                () -> 3, false, "test-server", "test-family", false, false, 0.75);
         assertTrue(client.connect().get(10, TimeUnit.SECONDS), "initial connect must succeed");
     }
 
@@ -259,11 +261,14 @@ class HttpAIClientNetworkTest {
     private Main mockPlugin() {
         Main plugin = mock(Main.class);
         Server server = mock(Server.class);
+        Config pluginConfig = mock(Config.class);
+        when(pluginConfig.getLicenseKey()).thenReturn("test-key");
         when(server.getIp()).thenReturn("127.0.0.1");
         when(server.getPort()).thenReturn(25565);
         when(plugin.getLogger()).thenReturn(Logger.getLogger("HttpAIClientNetworkTest"));
         when(plugin.getDescription()).thenReturn(new PluginDescriptionFile("ZeyronAC", "test", "com.zeyronac.Main"));
         when(plugin.getServer()).thenReturn(server);
+        when(plugin.getPluginConfig()).thenReturn(pluginConfig);
         return plugin;
     }
 
