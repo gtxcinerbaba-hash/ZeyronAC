@@ -11,7 +11,7 @@
 
 <!-- Links -->
 <p align="center">
-  <a href="https://discord.gg/4pRg449Chs">
+  <a href="https://discord.gg/b8YuxGUZaG">
     <img src="https://img.shields.io/badge/Discord-Join%20Server-5865F2?style=flat-square&logo=discord&logoColor=white" />
   </a>
   <a href="https://github.com/gtxcinerbaba-hash/ZeyronAC/issues">
