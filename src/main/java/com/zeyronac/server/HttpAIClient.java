@@ -148,9 +148,9 @@ public class HttpAIClient implements IAIClient {
                     Request original = chain.request();
                     Request.Builder builder = original.newBuilder()
                             .method(original.method(), original.body());
-                    String licenseKey = plugin.getPluginConfig().getLicenseKey();
-                    if (licenseKey != null && !licenseKey.isEmpty()) {
-                        builder.header("X-License-Key", licenseKey);
+                    String key = plugin.getPluginConfig().getLicenseKey();
+                    if (key != null && !key.isEmpty()) {
+                        builder.header("X-API-Key", key);
                     }
                     return chain.proceed(builder.build());
                 })
@@ -289,24 +289,26 @@ public class HttpAIClient implements IAIClient {
                         .build();
 
                 try (Response response = httpClient.newCall(initRequest).execute()) {
-                    if (response.code() == 401 || response.code() == 403) {
+                    int code = response.code();
+                    ResponseBody respBody = response.body();
+                    String responseBody = respBody != null ? respBody.string() : "";
+                    if (debug) {
+                        logger.info("[HTTP] /init response: " + code + " body=" + responseBody);
+                    }
+                    if (code == 401 || code == 403) {
                         logger.severe("[HTTP] Authentication failed! API key is invalid, expired, or corrupted. Please check your API key in config.yml");
+                        if (debug) {
+                            logger.info("[HTTP] /init auth failure body: " + responseBody);
+                        }
                         connected.set(false);
                         return false;
                     }
                     if (!response.isSuccessful()) {
-                        logger.warning("[HTTP] Init failed: HTTP " + response.code());
+                        logger.warning("[HTTP] Init failed: HTTP " + code);
                         connected.set(false);
                         return false;
                     }
 
-                    ResponseBody body = response.body();
-                    String responseBody;
-                    if (body != null) {
-                        responseBody = body.string();
-                    } else {
-                        responseBody = "";
-                    }
                     handleApiWarnings(responseBody);
                     sessionId = extractSessionId(responseBody);
                     if (sessionId == null || sessionId.isEmpty()) {

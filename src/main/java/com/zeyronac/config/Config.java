@@ -532,7 +532,11 @@ public class Config {
     }
 
     public String getLicenseKey() {
-        return licenseKey;
+        if (licenseKey != null && !licenseKey.isEmpty()) {
+            return licenseKey;
+        }
+        // Backwards compatibility: old api-key field can hold the license key
+        return aiApiKey;
     }
 
     public double getAiAlertThreshold() {

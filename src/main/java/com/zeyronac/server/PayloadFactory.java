@@ -31,8 +31,14 @@ package com.zeyronac.server;
 import com.google.gson.JsonObject;
 import com.zeyronac.Main;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.function.IntSupplier;
+import java.util.logging.Logger;
 
 /**
  * Builds the JSON request bodies the HTTP client sends to the inference backend. Holds the static
@@ -45,6 +51,12 @@ final class PayloadFactory {
     private final String serverFamily;
     private final boolean interServerEnabled;
     private final IntSupplier onlinePlayersSupplier;
+    private final Logger logger;
+
+    // Cache the resolved public IP so we don't make an HTTP request on every payload.
+    private volatile String cachedPublicIp = null;
+    private volatile long lastIpFetchTime = 0;
+    private static final long IP_CACHE_TTL_MS = 300_000; // 5 minutes
 
     PayloadFactory(Main plugin, String serverName, String serverFamily,
             boolean interServerEnabled, IntSupplier onlinePlayersSupplier) {
@@ -53,6 +65,7 @@ final class PayloadFactory {
         this.serverFamily = normalize(serverFamily);
         this.interServerEnabled = interServerEnabled;
         this.onlinePlayersSupplier = onlinePlayersSupplier;
+        this.logger = plugin.getLogger();
     }
 
     private static String normalize(String value) {
@@ -113,8 +126,59 @@ final class PayloadFactory {
         return json;
     }
 
+    /**
+     * Returns the server's public IP address.
+     * 
+     * Pterodactyl containers always report 0.0.0.0 for Bukkit.getServer().getIp(),
+     * which is useless for license validation. This method queries an external
+     * IP echo service to find the real public IP. The result is cached for 5 minutes
+     * to avoid making HTTP requests on every API call.
+     */
     private String advertisedServerIp() {
+        // Try Bukkit configured IP first
         String bukkitIp = plugin.getServer().getIp();
-        return bukkitIp != null && !bukkitIp.trim().isEmpty() ? bukkitIp.trim() : "unknown";
+        if (bukkitIp != null && !bukkitIp.trim().isEmpty()
+                && !bukkitIp.equals("0.0.0.0") && !bukkitIp.equals("0:0:0:0:0:0:0:0")) {
+            return bukkitIp.trim();
+        }
+
+        // Use cached public IP if fresh
+        long now = System.currentTimeMillis();
+        if (cachedPublicIp != null && (now - lastIpFetchTime) < IP_CACHE_TTL_MS) {
+            return cachedPublicIp;
+        }
+
+        // Fetch public IP from external service
+        String[] services = {
+            "https://api.ipify.org",
+            "https://ifconfig.me/ip",
+            "https://icanhazip.com",
+        };
+
+        for (String service : services) {
+            try {
+                HttpClient client = HttpClient.newBuilder()
+                        .connectTimeout(Duration.ofSeconds(3))
+                        .build();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(service))
+                        .timeout(Duration.ofSeconds(5))
+                        .GET()
+                        .header("User-Agent", "ZeyronAC/1.0")
+                        .build();
+                HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                String ip = response.body().trim();
+                if (!ip.isEmpty() && ip.length() <= 45) {
+                    cachedPublicIp = ip;
+                    lastIpFetchTime = now;
+                    return ip;
+                }
+            } catch (Exception e) {
+                // Try next service
+            }
+        }
+
+        // All services failed; return unknown
+        return cachedPublicIp != null ? cachedPublicIp : "unknown";
     }
 }
