@@ -39,6 +39,7 @@ public class Config {
     private final String outputDirectory;
     private final boolean aiEnabled;
     private final String aiApiKey;
+    private String licenseKey;
     private final double aiAlertThreshold;
     private final boolean aiConsoleAlerts;
     private final boolean alertSoundEnabled;
@@ -124,6 +125,7 @@ public class Config {
     public static final String DEFAULT_AUTOSTART_LABEL = "UNLABELED";
     public static final String DEFAULT_AUTOSTART_COMMENT = "";
     public static final String DEFAULT_SERVER_ADDRESS = "https://api.zeyronac.com/api/v1";
+    public static final String DEFAULT_LICENSE_KEY = "";
     public static final String DEFAULT_SERVER_IDENTITY_NAME = "default";
     public static final String DEFAULT_SERVER_IDENTITY_FAMILY = "default";
     public static final boolean DEFAULT_INTERSERVER_ENABLED = false;
@@ -147,6 +149,7 @@ public class Config {
         this.outputDirectory = DEFAULT_OUTPUT_DIRECTORY;
         this.aiEnabled = DEFAULT_AI_ENABLED;
         this.aiApiKey = DEFAULT_AI_API_KEY;
+        this.licenseKey = DEFAULT_LICENSE_KEY;
         this.aiAlertThreshold = DEFAULT_AI_ALERT_THRESHOLD;
         this.aiConsoleAlerts = DEFAULT_AI_CONSOLE_ALERTS;
         this.alertSoundEnabled = DEFAULT_ALERT_SOUND_ENABLED;
@@ -227,6 +230,8 @@ public class Config {
                 config.getBoolean("ai.enabled", DEFAULT_AI_ENABLED));
         this.aiApiKey = config.getString("detection.api-key",
                 config.getString("ai.api-key", DEFAULT_AI_API_KEY));
+        this.licenseKey = config.getString("detection.license-key",
+                config.getString("ai.license-key", DEFAULT_LICENSE_KEY));
         double alertThreshold = config.getDouble("alerts.threshold",
                 config.getDouble("ai.alert.threshold", DEFAULT_AI_ALERT_THRESHOLD));
         this.aiAlertThreshold = clampThreshold(alertThreshold, "alerts.threshold", logger);
@@ -524,6 +529,10 @@ public class Config {
 
     public String getAiApiKey() {
         return aiApiKey;
+    }
+
+    public String getLicenseKey() {
+        return licenseKey;
     }
 
     public double getAiAlertThreshold() {

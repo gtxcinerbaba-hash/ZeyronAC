@@ -146,6 +146,16 @@ public class HttpAIClient implements IAIClient {
                 .readTimeout(READ_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .writeTimeout(WRITE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 .retryOnConnectionFailure(false)
+                .addInterceptor(chain -> {
+                    Request original = chain.request();
+                    Request.Builder builder = original.newBuilder()
+                            .method(original.method(), original.body());
+                    String licenseKey = plugin.getPluginConfig().getLicenseKey();
+                    if (licenseKey != null && !licenseKey.isEmpty()) {
+                        builder.header("X-License-Key", licenseKey);
+                    }
+                    return chain.proceed(builder.build());
+                })
                 .build();
     }
 
