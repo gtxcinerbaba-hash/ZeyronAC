@@ -4,7 +4,7 @@ alerts-enabled: '&fAlerts &aenabled'
 alerts-disabled: '&fAlerts &cdisabled'
 monitor-enabled: '&fMonitor mode &aenabled &7| all detections shown'
 monitor-disabled: '&fMonitor mode &cdisabled'
-monitor-format: '&#F1F1F1▍ &#D8D8D8Z&#BFBFBFY&#A6A6A6R&#8D8D8DA&#747474C &r&#81FFC2[{MODEL}]&f &f{PLAYER} &7- {PROBABILITY_COLORED}'
+monitor-format: '&#4498DB▍ &#4AA8D6Z&#4DB1D4e&#50B9D1y&#53C1CFr&#56C9CCo&#59D2CAn&#5CDAC7A&#5FE2C5C &r&#81FFC2[{MODEL}]&f &f{PLAYER} &7- {PROBABILITY_COLORED}'
 # Local alert shown on the server where the violation was detected.
 # Optional placeholder: {STEP_PERCENT} — when the alert is fired from a buffer-step crossing
 # (alert-responses.alerts.buffer-step-percent), resolves to 33/66/99/...; empty otherwise.
