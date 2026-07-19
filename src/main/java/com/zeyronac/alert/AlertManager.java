@@ -291,6 +291,7 @@ public class AlertManager {
         String modelDisplay = modelName != null ? config.getModelDisplayName(modelName) : "Unknown";
         String template = messagesConfig.getMessage("monitor-format");
         String messageText = template
+                .replace("{PREFIX}", getPrefix())
                 .replace("{MODEL}", modelDisplay)
                 .replace("{PLAYER}", suspectName)
                 .replace("{PROBABILITY_COLORED}", coloredProb);
