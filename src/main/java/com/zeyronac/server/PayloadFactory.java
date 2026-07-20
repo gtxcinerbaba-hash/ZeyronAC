@@ -201,15 +201,96 @@ final class PayloadFactory {
             if (candidate.isEmpty() || candidate.length() > 45) {
                 return null;
             }
-            // Validate by parsing as InetAddress; rejects hostnames, multi-line payloads.
-            InetAddress parsed = InetAddress.getByName(candidate);
-            // getHostAddress() gives the canonical, normalized form (no IPv6 shorthand surprises).
-            return parsed.getHostAddress();
+            // Guvenlik: sadece IP literal kabul et (hostname resolve ETME).
+            // InetAddress.getByName hostname'leri de resolve eder → internal IP leak.
+            // Bunun yerine strict IP literal validation yap.
+            if (!isIpLiteral(candidate)) {
+                if (logger != null && logger.isLoggable(java.util.logging.Level.FINE)) {
+                    logger.fine("[PayloadFactory] IP echo returned non-literal: " + candidate);
+                }
+                return null;
+            }
+            try {
+                InetAddress parsed = InetAddress.getByName(candidate);
+                // getHostAddress() gives the canonical, normalized form (no IPv6 shorthand surprises).
+                return parsed.getHostAddress();
+            } catch (Exception e) {
+                return null;
+            }
         } catch (Exception e) {
             if (logger != null && logger.isLoggable(java.util.logging.Level.FINE)) {
                 logger.fine("[PayloadFactory] IP echo " + service + " failed: " + e.getMessage());
             }
             return null;
         }
+    }
+
+    /**
+     * Bir string'in strict bir IPv4 veya IPv6 literal'i olup olmadigini kontrol eder.
+     * Hostname'leri (orn. metadata.google.internal) REDEDER — DNS resolve yapmaz.
+     * Bu, kompromize olmus echo servislerinin internal IP leak etmesini onler.
+     */
+    private static boolean isIpLiteral(String s) {
+        if (s == null || s.isEmpty()) {
+            return false;
+        }
+        // IPv4: dotted quad, her octet 0-255
+        String trimmed = s.trim();
+        // IPv6 icin kolon icerir, IPv4 icin nokta
+        if (trimmed.contains(":")) {
+            // IPv6 literal dene
+            try {
+                // getByName yerine strict parse: IPv6 literal sadece
+                InetAddress addr = InetAddress.getByName(trimmed);
+                // Eger hostname ise getByName resolve eder ama addr.isSiteLocalAddress
+                // gibi kontrol yapamayiz. Bunun yerine: literal ise toString
+                // "/" icerir ve solda IP vardir. hostname ise solda hostname vardir.
+                String hostAddr = addr.getHostAddress();
+                // getHostAddress her zaman bir IP formatinda olur.
+                // Ama hostname resolve edildiyse, addr.getHostName() hostname doner.
+                // En guvenli: candidate'in kendisinin parse edilebilir oldugunu
+                // InetAddress.getByName ile degil, manuel regex ile kontrol et.
+                return trimmed.equals(hostAddr) || isLikelyIpv6Literal(trimmed);
+            } catch (Exception e) {
+                return isLikelyIpv6Literal(trimmed);
+            }
+        }
+        // IPv4
+        if (trimmed.contains(".")) {
+            String[] parts = trimmed.split("\\.");
+            if (parts.length != 4) {
+                return false;
+            }
+            for (String p : parts) {
+                if (p.isEmpty() || p.length() > 3) {
+                    return false;
+                }
+                try {
+                    int octet = Integer.parseInt(p);
+                    if (octet < 0 || octet > 255) {
+                        return false;
+                    }
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isLikelyIpv6Literal(String s) {
+        // Basit IPv6 heuristic: en az 2 kolon icerir ve sadece hex/kolon/nokta karakterleri
+        long colons = s.chars().filter(c -> c == ':').count();
+        if (colons < 2) {
+            return false;
+        }
+        for (char c : s.toCharArray()) {
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')
+                    || c == ':' || c == '.' || c == '%')) {
+                return false;
+            }
+        }
+        return true;
     }
 }

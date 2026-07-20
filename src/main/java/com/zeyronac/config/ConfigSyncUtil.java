@@ -44,10 +44,16 @@ import java.util.Set;
 public final class ConfigSyncUtil {
     private static final String SCHEMA_VERSION_KEY = "_schema-version";
     // Paths preserved across a config schema wipe. Anything else is regenerated from defaults.
+    // detection.endpoint ve server-identity.* eklenmediyse, schema wipe sonrasi custom backend
+    // URL kaybolur ve veri vendor endpoint'ine gider.
     private static final Set<String> CONFIG_PRESERVED_PATHS = Collections.unmodifiableSet(
             new java.util.LinkedHashSet<>(java.util.Arrays.asList(
                     "detection.api-key",
                     "detection.enabled",
+                    "detection.endpoint",
+                    "detection.license-key",
+                    "server-identity.server-name",
+                    "server-identity.server-port",
                     "penalties.actions")));
 
     private ConfigSyncUtil() {

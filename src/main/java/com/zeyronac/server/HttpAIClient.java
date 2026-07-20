@@ -38,7 +38,6 @@ import com.zeyronac.Permissions;
 import com.zeyronac.alert.AlertManager;
 import com.zeyronac.scheduler.SchedulerManager;
 import com.zeyronac.util.ColorUtil;
-import com.zeyronac.util.SecurityUtil;
 import java.io.BufferedReader;
 import java.util.Locale;
 import java.io.IOException;

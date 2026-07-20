@@ -131,7 +131,7 @@ public class Config {
     public static final boolean DEFAULT_INTERSERVER_ENABLED = false;
     public static final boolean DEFAULT_API_EVENT_REPORTING_ENABLED = true;
     public static final double DEFAULT_API_ALERT_EVENT_THRESHOLD = 0.75;
-    public static final boolean DEFAULT_UPDATES_ENABLED = true;
+    public static final boolean DEFAULT_UPDATES_ENABLED = false;
     public static final boolean DEFAULT_VL_DECAY_ENABLED = true;
     public static final int DEFAULT_VL_DECAY_INTERVAL_SECONDS = 60;
     public static final int DEFAULT_VL_DECAY_AMOUNT = 1;

@@ -688,6 +688,12 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             }
         } else if (args.length == 2) {
             String subCommand = args[0].toLowerCase();
+            // Guvenlik: subcommand'in yetkisini tekrar kontrol et — yoksa
+            // her oyuncu /zeyronac punish <TAB> ile online isimleri gorebilir.
+            SubCommand sub = subCommands.get(subCommand);
+            if (sub == null || !hasAnyPermission(sender, sub.anyPermission)) {
+                return completions;  // bos don
+            }
             if (Arrays.asList("prob", "punish", "profile").contains(subCommand)) {
                 List<String> targets = new ArrayList<>(getOnlinePlayerNames());
                 completions.addAll(filterStartsWith(targets, args[1]));
@@ -700,6 +706,11 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
             }
         } else if (args.length == 3) {
             String subCommand = args[0].toLowerCase();
+            // Ayni sekilde 3. seviyede de yetki re-check
+            SubCommand sub = subCommands.get(subCommand);
+            if (sub == null || !hasAnyPermission(sender, sub.anyPermission)) {
+                return completions;
+            }
             if (subCommand.equalsIgnoreCase("falsepositive") && args[1].equalsIgnoreCase("restore")) {
                 completions.addAll(filterStartsWith(getOnlinePlayerNames(), args[2]));
             } else if (subCommand.equals("punish")) {
@@ -714,6 +725,12 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 completions.addAll(filterStartsWith(targets, args[2]));
             }
         } else if (args.length == 4) {
+            // 4. seviyede de subcommand yetki re-check
+            String subCommand = args[0].toLowerCase();
+            SubCommand sub = subCommands.get(subCommand);
+            if (sub == null || !hasAnyPermission(sender, sub.anyPermission)) {
+                return completions;
+            }
             if (args[0].equalsIgnoreCase("record") && args[1].equalsIgnoreCase("start")) {
                 List<String> labels = Arrays.stream(Label.values())
                         .map(Label::name)
