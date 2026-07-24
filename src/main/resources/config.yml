@@ -65,10 +65,10 @@ detection:
   models:
     fast:
       name: "Fast"
-      only-alert: true # Stable model - punishments enabled
+      only-alert: false # Stable model - punishments enabled
     pro:
       name: "Pro"
-      only-alert: true # Newest model - punishments enabled
+      only-alert: false # Newest model - punishments enabled
     ultra:
       name: "Ultra"
       only-alert: true # Model in development - testing mode - no punishments
@@ -188,7 +188,8 @@ penalties:
   # Actions by violation level
   # Aggressive system: alert -> kick -> ban
   actions:
-    1: ""
+    1: "kick {PLAYER} ZeyronAC Detection (VL:{VL})"
+    2: "{ANIMATION} ban {PLAYER} Cheating (ZeyronAC VL:{VL})"
 #
 #  Also you could use  1: "{CUSTOM_ALERT} &c{PLAYER} &7is suspicious &8(&fVL:&e{VL}&8, &fProb:&e{PROBABILITY}&8)"
 
