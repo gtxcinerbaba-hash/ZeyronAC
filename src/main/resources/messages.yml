@@ -86,6 +86,7 @@ punish-success: '&aPunished &f{PLAYER} &7({ACTION})'
 punish-no-action: '&cNo punishment actions'
 punish-no-evidence: '&c{PLAYER} has no detections &7(VL, buffer and detection count are all zero) &c- punishment cancelled'
 punish-confirm-hint: '&7Use &f/zeyronac punish {PLAYER} confirm &7to punish anyway'
+punish-cooldown: '&7Please wait &f{SECONDS}s &7before punishing this player again'
 
 profile-header: '&f&l● Profile: &f{PLAYER} &f&l●'
 profile-info:

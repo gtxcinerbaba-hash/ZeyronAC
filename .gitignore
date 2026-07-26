@@ -11,3 +11,17 @@
 # Test-run artifacts
 /.jqwik-database
 *.log
+
+# L1: Runtime-uretilen dosyalar - lisans anahtari ve oyuncu verisi icebilir.
+# Bunlarin git history'sine dusmesini engelle.
+/hs_err_pid*.log
+/replay_pid*.log
+/data/
+/config.yml
+/messages.yml
+/menu.yml
+/holograms.yml
+/animations/
+/recordings/
+/database/
+*.db

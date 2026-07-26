@@ -82,6 +82,11 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
     private final Map<UUID, ScheduledTask> probTasks = new ConcurrentHashMap<>();
     private final Map<String, Long> reinstallConfirmations = new ConcurrentHashMap<>();
     private static final long REINSTALL_CONFIRM_WINDOW_MILLIS = TimeUnit.SECONDS.toMillis(3);
+    // H4: /zeyronac punish per-(issuer+target) cooldown - spam yoluyla aninda
+    // max-VL ban/kick tekrarini onle. ViolationManager.PUNISHMENT_COOLDOWN_MS ile
+    // ayni mantik, ama manuel punish yolu icin ayrica. 10 saniye.
+    private static final long MANUAL_PUNISH_COOLDOWN_MS = TimeUnit.SECONDS.toMillis(10);
+    private final Map<String, Long> manualPunishCooldowns = new ConcurrentHashMap<>();
 
     /**
      * Registry of sub-commands. Each entry owns its access policy (required permissions and
@@ -414,6 +419,18 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
         int detections = data != null ? data.getHighProbabilityDetections() : 0;
         boolean confirmed = args.length >= 3 && args[2].equalsIgnoreCase("confirm");
 
+        // H4: per-(issuer+target) cooldown. Ayni admin ayni oyuncuya surekli
+        // executeMaxPunishment spam yapamaz. Bu, /zeyronac punish'i tekrar
+        // tekrar calistirip max-VL ban script'i replay etmeyi onler.
+        String cooldownKey = issuer + "|" + target.getUniqueId();
+        long now = System.currentTimeMillis();
+        Long last = manualPunishCooldowns.get(cooldownKey);
+        if (last != null && (now - last) < MANUAL_PUNISH_COOLDOWN_MS) {
+            long remain = (MANUAL_PUNISH_COOLDOWN_MS - (now - last)) / 1000;
+            sender.sendMessage(getPrefix() + msg("punish-cooldown", "{SECONDS}", String.valueOf(remain + 1)));
+            return;
+        }
+
         if (vl <= 0 && buffer <= 0.0 && detections <= 0 && !confirmed) {
             sender.sendMessage(getPrefix() + msg("punish-no-evidence", "{PLAYER}", target.getName()));
             sender.sendMessage(msg("punish-confirm-hint", "{PLAYER}", target.getName()));
@@ -426,6 +443,15 @@ public class CommandHandler implements CommandExecutor, TabCompleter {
                 + " | VL=" + vl + " buffer=" + String.format(java.util.Locale.ROOT, "%.1f", buffer)
                 + " detections=" + detections + (confirmed ? " (confirmed override)" : ""));
         plugin.getViolationManager().executeMaxPunishment(target);
+        // H4: cooldown'u kaydet.
+        manualPunishCooldowns.put(cooldownKey, now);
+        // .put() ile her issuer icin buyuyen map'i zamanla temizlemek lazim;
+        // 内蒙古埋 zaten cok degil (admin sayisiyla sinirli), ama yine de eski
+        // entry'leri 5+ cooldown suresinden eskilerin at.
+        if (manualPunishCooldowns.size() > 256) {
+            long cutoff = now - (MANUAL_PUNISH_COOLDOWN_MS * 5);
+            manualPunishCooldowns.entrySet().removeIf(e -> e.getValue() < cutoff);
+        }
         if (plugin.getPluginConfig().getPunishmentCommands().isEmpty()) {
             sender.sendMessage(getPrefix() + msg("punish-no-action"));
         } else {

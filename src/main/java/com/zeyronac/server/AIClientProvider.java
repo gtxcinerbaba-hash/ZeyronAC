@@ -79,6 +79,20 @@ public class AIClientProvider {
                 logger.warning("[AI] License key is not configured!");
                 return CompletableFuture.completedFuture(false);
             }
+            // L2: Placeholder API key degerlerini reddet. Shipped config.yml
+            // "your-api-key" yer tutucusu ile gelir; operator bunu degistirmeyi
+            // unutursa plugin yine de X-API-Key gonderip backend'e auth fail Log
+            // yaratir ve trafiği (potansiyel HTTP üzerinde) ifsa eder.
+            String normalizedKey = licenseKey.trim();
+            if ("your-api-key".equalsIgnoreCase(normalizedKey)
+                    || "your_api_key".equalsIgnoreCase(normalizedKey)
+                    || "change-me".equalsIgnoreCase(normalizedKey)
+                    || "placeholder".equalsIgnoreCase(normalizedKey)
+                    || "xxx".equalsIgnoreCase(normalizedKey)) {
+                logger.severe("[AI] License key is the shipped placeholder '" + licenseKey
+                        + "'. Refusing to start. Configure a real license key in config.yml (detection.api-key).");
+                return CompletableFuture.completedFuture(false);
+            }
 
             connecting = true;
 

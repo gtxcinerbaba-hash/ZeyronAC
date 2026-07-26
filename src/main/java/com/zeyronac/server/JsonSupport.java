@@ -59,16 +59,30 @@ final class JsonSupport {
         try {
             JsonObject json = new JsonParser().parse(responseBody).getAsJsonObject();
             double probability = json.has("probability") ? json.get("probability").getAsDouble() : 0.0;
+            // M4: Backend kontrollu 'model' stringini sanitize + length-cap yap.
+            // Serversel whitelist: sadece "fast"/"pro"/"ultra"/"experimental".
+            // Bilinmeyen model = "unknown" (alert/chat'e zarar veremez).
             String model = json.has("model") ? json.get("model").getAsString() : null;
+            if (model != null) {
+                model = com.zeyronac.util.SecurityUtil.sanitizeChatText(model, 32);
+                if (!model.matches("(?i)fast|pro|ultra|experimental")) {
+                    model = "unknown";
+                }
+            }
             String error = json.has("error") ? json.get("error").getAsString() : null;
 
             if (error != null && !error.isEmpty()) {
-                throw new RuntimeException(error);
+                // M5: Backend kontrollu hata mesajini log enjeksiyonundan korumak icin
+                // sanitize et ve uzunluk siniri koy (orn. cok satirli ANSI/log spoofing).
+                String safe = com.zeyronac.util.SecurityUtil.sanitizeChatText(error, 256);
+                throw new RuntimeException(safe);
             }
 
             return new AIResponse(probability, null, model);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse response: " + e.getMessage());
+            // M5: Tekrar sanitize - getAsString veya parse hatasi mesajini bilestirmeden once.
+            String safe = com.zeyronac.util.SecurityUtil.sanitizeChatText(e.getMessage(), 256);
+            throw new RuntimeException("Failed to parse response: " + safe);
         }
     }
 }

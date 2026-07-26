@@ -31,7 +31,6 @@ package com.zeyronac.server;
 import com.google.gson.JsonObject;
 import com.zeyronac.Main;
 
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -134,7 +133,10 @@ final class PayloadFactory {
         json.addProperty("vl", violationLevel);
         json.addProperty("violationLevel", violationLevel);
         json.addProperty("action", action != null ? action : type);
-        json.addProperty("command", command != null ? command : "");
+        // M2/L6: 'command' field artik HER ZAMAN action ile ayni. Backend'e raw
+        // console komutu (server'in özel ceza politikasi) leak etmeyi onle.
+        // Gecmiste cagiran taraf raw komut gonderebiliyordu (latent privacy leak).
+        json.addProperty("command", action != null ? action : type);
         return json;
     }
 
@@ -202,21 +204,18 @@ final class PayloadFactory {
                 return null;
             }
             // Guvenlik: sadece IP literal kabul et (hostname resolve ETME).
-            // InetAddress.getByName hostname'leri de resolve eder → internal IP leak.
-            // Bunun yerine strict IP literal validation yap.
+            // InetAddress.getByName hostname'leri de resolve eder → internal IP leak
+            // ve DNS bagimliligi. Bunun yerine strict IP literal validation yap.
             if (!isIpLiteral(candidate)) {
                 if (logger != null && logger.isLoggable(java.util.logging.Level.FINE)) {
                     logger.fine("[PayloadFactory] IP echo returned non-literal: " + candidate);
                 }
                 return null;
             }
-            try {
-                InetAddress parsed = InetAddress.getByName(candidate);
-                // getHostAddress() gives the canonical, normalized form (no IPv6 shorthand surprises).
-                return parsed.getHostAddress();
-            } catch (Exception e) {
-                return null;
-            }
+            // H2: getByName() tekrar cagirma - candidate zaten strict literal,
+            // kanonik form gerekirse getHostAddress lazim ama literal zaten
+            // normalize edilmis (echo servisleri bosluk icermiyor -> trim yeterli).
+            return candidate;
         } catch (Exception e) {
             if (logger != null && logger.isLoggable(java.util.logging.Level.FINE)) {
                 logger.fine("[PayloadFactory] IP echo " + service + " failed: " + e.getMessage());
@@ -231,31 +230,19 @@ final class PayloadFactory {
      * Bu, kompromize olmus echo servislerinin internal IP leak etmesini onler.
      */
     private static boolean isIpLiteral(String s) {
+        // H2: Onceki versiyon InetAddress.getByName cagiriyordu - bu hostnameleri
+        // resolve eder ve internal IP leak'e yol acabilir (orn. metadata.google.internal).
+        // Bunun yerine strictmanuel-parse: sadece IPv4 dotted-quad veya IPv6 hexliteral.
         if (s == null || s.isEmpty()) {
             return false;
         }
-        // IPv4: dotted quad, her octet 0-255
         String trimmed = s.trim();
         // IPv6 icin kolon icerir, IPv4 icin nokta
         if (trimmed.contains(":")) {
-            // IPv6 literal dene
-            try {
-                // getByName yerine strict parse: IPv6 literal sadece
-                InetAddress addr = InetAddress.getByName(trimmed);
-                // Eger hostname ise getByName resolve eder ama addr.isSiteLocalAddress
-                // gibi kontrol yapamayiz. Bunun yerine: literal ise toString
-                // "/" icerir ve solda IP vardir. hostname ise solda hostname vardir.
-                String hostAddr = addr.getHostAddress();
-                // getHostAddress her zaman bir IP formatinda olur.
-                // Ama hostname resolve edildiyse, addr.getHostName() hostname doner.
-                // En guvenli: candidate'in kendisinin parse edilebilir oldugunu
-                // InetAddress.getByName ile degil, manuel regex ile kontrol et.
-                return trimmed.equals(hostAddr) || isLikelyIpv6Literal(trimmed);
-            } catch (Exception e) {
-                return isLikelyIpv6Literal(trimmed);
-            }
+            // IPv6 literal: strict, hicbir DNS cagrisi yapmadan manuel dogrula.
+            return isLikelyIpv6Literal(trimmed);
         }
-        // IPv4
+        // IPv4: dotted quad, her octet 0-255
         if (trimmed.contains(".")) {
             String[] parts = trimmed.split("\\.");
             if (parts.length != 4) {

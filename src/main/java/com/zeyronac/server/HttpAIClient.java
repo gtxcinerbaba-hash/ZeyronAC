@@ -122,10 +122,21 @@ public class HttpAIClient implements IAIClient {
         this.serverAddress = serverAddress;
         this.logger = plugin.getLogger();
         this.debug = debug;
-        if (serverAddress != null && serverAddress.toLowerCase(Locale.ROOT).startsWith("http://")
-                && !serverAddress.contains("localhost") && !serverAddress.contains("127.0.0.1")) {
-            logger.warning("[HTTP] AI backend uses plaintext http:// to a remote host - predictions and"
-                    + " punish reports can be read or modified in transit. Use https:// for remote backends.");
+        // C1: Lisans anahtari (X-API-Key) ve oyuncu verisi cleartext gidemez.
+        // Remote (non-loopback) http:// URL'leri sert sekilde reddet: API key
+        // MITM tarafindan calmamasi icin. Loopback (localhost/127.0.0.1) yalniz
+        // gelistirme/test icin istisna.
+        if (serverAddress != null) {
+            String lower = serverAddress.toLowerCase(Locale.ROOT);
+            if (lower.startsWith("http://")
+                    && !lower.contains("localhost") && !lower.contains("127.0.0.1") && !lower.contains("[::1]")) {
+                throw new IllegalArgumentException(
+                        "[HTTP] AI backend '" + serverAddress + "' uses insecure http:// for a remote host. "
+                                + "Refusing to send license key/player data over cleartext. "
+                                + "Configure https:// in config.yml (detection.endpoint).");
+            } else if (lower.startsWith("http://")) {
+                logger.warning("[HTTP] AI backend uses http:// to a loopback host - acceptable for local dev only.");
+            }
         }
         this.payloads = new PayloadFactory(plugin, serverName, serverFamily,
                 interServerEnabled, onlinePlayersSupplier);
@@ -318,7 +329,11 @@ public class HttpAIClient implements IAIClient {
 
                     handleApiWarnings(responseBody);
                     sessionId = extractSessionId(responseBody);
-                    if (sessionId == null || sessionId.isEmpty()) {
+                    // M6: Backend tarafindan gelen sessionId'yi dogrula. Kötü niyetli
+                    // backend log enjeksiyonu icin \n kontrol karakteri veya cok uzun
+                    // string gonderebilir. Yanlis format => yerel fallback.
+                    if (sessionId == null || sessionId.isEmpty()
+                            || !sessionId.matches("[A-Za-z0-9._-]{1,128}")) {
                         sessionId = "http-session-" + System.currentTimeMillis();
                     }
                 }
@@ -326,6 +341,8 @@ public class HttpAIClient implements IAIClient {
                 connected.set(true);
                 consecutiveNetworkFailures.set(0);
                 reconnectAttempts.set(0);
+                // M6: sessionId her halukarda validation'dan gectigi icin guvenle
+                // loglanabilir (regex: [A-Za-z0-9._-]{1,128}).
                 logger.info("[HTTP] Connected successfully. Session: " + sessionId);
 
                 startHeartbeat();

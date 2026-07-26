@@ -172,16 +172,40 @@ public class DataSession {
         if (csvContent.isEmpty()) {
             return;
         }
-        File dataFolder;
-        if (sessionFolder != null && !sessionFolder.isEmpty()) {
-            dataFolder = new File(plugin.getDataFolder(), plugin.getConfig().getString("outputDirectory") + sessionFolder);
-        } else {
-            dataFolder = new File(plugin.getDataFolder(), "data");
+        // H5/H6: sessionFolder admin tarafindan geliyor olabilir; path traversal
+        // onle. outputDirectory config'ten geliyor ama yine de risk. Her ikisini
+        // de sanitize edip sonucu dataFolder icine yazildigini prefix check ile
+        // dogrula. Absolute ogeler/.. escape yasak.
+        String outputDir = plugin.getConfig().getString("outputDirectory");
+        if (outputDir == null || outputDir.isEmpty()) {
+            outputDir = "data";
         }
-        if (!dataFolder.exists()) {
-            dataFolder.mkdirs();
+        File pluginDataFolder = plugin.getDataFolder();
+        String combined;
+        if (sessionFolder != null && !sessionFolder.isEmpty()) {
+            // sessionFolder'i sanitizeFileName ile ../ ve separator'leri yok et.
+            String safeFolder = SecurityUtil.sanitizeFileName(sessionFolder);
+            combined = outputDir + File.separator + safeFolder;
+        } else {
+            combined = outputDir;
+        }
+        File dataFolder = new File(pluginDataFolder, combined);
+        if (!dataFolder.exists() && !dataFolder.mkdirs()) {
+            throw new IOException("Could not create data directory: " + dataFolder);
         }
         File outputFile = new File(dataFolder, generateFileName());
+        // H6: Canonical path'in dataFolder icinde kalmasini garanti et. Bu,
+        // ozel sembolik link veya race condition ile bile disari cikmamayi saglar.
+        try {
+            File pluginRoot = pluginDataFolder.getCanonicalFile();
+            File outFileCanon = outputFile.getCanonicalFile();
+            if (!outFileCanon.toPath().startsWith(pluginRoot.toPath())) {
+                throw new IOException("Refusing to write CSV outside plugin data folder: " + outFileCanon);
+            }
+        } catch (java.security.AccessControlException ace) {
+            // SecurityManager ortaminda canonical path erisimi engellenmis olabilir.
+            throw new IOException("Path resolution denied for output file: " + ace.getMessage());
+        }
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(outputFile))) {
             writer.write(csvContent);
         }
