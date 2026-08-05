@@ -48,6 +48,8 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
@@ -62,6 +64,12 @@ public class UpdateChecker {
     private final String apiBaseUrl;
     private final int javaBuild;
     private final AtomicBoolean checking = new AtomicBoolean(false);
+    // Default ForkJoinPool yerine daemon thread'li executor — JVM shutdown'da takılı kalmaz
+    private final ExecutorService netExecutor = Executors.newSingleThreadExecutor(r -> {
+        Thread t = new Thread(r, "ZeyronAC-UpdateChecker");
+        t.setDaemon(true);
+        return t;
+    });
 
     private ScheduledTask task;
     private volatile String latestVersion;
@@ -102,6 +110,8 @@ public class UpdateChecker {
             task.cancel();
             task = null;
         }
+        // Daemon executor shutdown (interrupt in-flight tasks yok sayılır)
+        netExecutor.shutdownNow();
     }
 
     public CompletableFuture<Boolean> checkForUpdates() {
@@ -145,7 +155,7 @@ public class UpdateChecker {
             } finally {
                 checking.set(false);
             }
-        });
+        }, netExecutor);
     }
 
     private UpdateInfo requestUpdateInfo() throws Exception {
@@ -155,31 +165,35 @@ public class UpdateChecker {
         String url = apiBaseUrl + "/plugin/update?java=" + javaBuild
                 + "&version=" + URLEncoder.encode(currentVersion, StandardCharsets.UTF_8.name());
         HttpURLConnection connection = openConnection(url);
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "application/json");
+        try {
+            connection.setRequestMethod("GET");
+            connection.setRequestProperty("Accept", "application/json");
 
-        if (connection.getResponseCode() != 200) {
-            return null;
-        }
-
-        try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
-            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
-            if (!root.has("success") || !root.get("success").getAsBoolean()) {
+            if (connection.getResponseCode() != 200) {
                 return null;
             }
 
-            JsonObject data = root.getAsJsonObject("data");
-            if (data == null) {
-                return null;
-            }
+            try (InputStreamReader reader = new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)) {
+                JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+                if (!root.has("success") || !root.get("success").getAsBoolean()) {
+                    return null;
+                }
 
-            UpdateInfo info = new UpdateInfo();
-            info.version = getString(data, "version");
-            info.sha256 = getString(data, "sha256");
-            info.downloadPath = getString(data, "downloadPath");
-            info.javaVersion = data.has("javaVersion") ? data.get("javaVersion").getAsInt() : javaBuild;
-            info.updateAvailable = data.has("updateAvailable") && data.get("updateAvailable").getAsBoolean();
-            return info;
+                JsonObject data = root.getAsJsonObject("data");
+                if (data == null) {
+                    return null;
+                }
+
+                UpdateInfo info = new UpdateInfo();
+                info.version = getString(data, "version");
+                info.sha256 = getString(data, "sha256");
+                info.downloadPath = getString(data, "downloadPath");
+                info.javaVersion = data.has("javaVersion") ? data.get("javaVersion").getAsInt() : javaBuild;
+                info.updateAvailable = data.has("updateAvailable") && data.get("updateAvailable").getAsBoolean();
+                return info;
+            }
+        } finally {
+            connection.disconnect();
         }
     }
 
@@ -206,17 +220,21 @@ public class UpdateChecker {
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Accept", "application/java-archive");
 
-        if (connection.getResponseCode() != 200) {
-            throw new IllegalStateException("Update download returned HTTP " + connection.getResponseCode());
-        }
-
-        try (InputStream inputStream = connection.getInputStream();
-             FileOutputStream outputStream = new FileOutputStream(tmpFile)) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, read);
+        try {
+            if (connection.getResponseCode() != 200) {
+                throw new IllegalStateException("Update download returned HTTP " + connection.getResponseCode());
             }
+
+            try (InputStream inputStream = connection.getInputStream();
+                 FileOutputStream outputStream = new FileOutputStream(tmpFile)) {
+                byte[] buffer = new byte[8192];
+                int read;
+                while ((read = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, read);
+                }
+            }
+        } finally {
+            connection.disconnect();
         }
 
         String actualSha256 = sha256(tmpFile);

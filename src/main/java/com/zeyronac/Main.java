@@ -150,6 +150,9 @@ public final class Main extends JavaPlugin {
         this.hologramManager.start();
 
         if (config.isAiEnabled()) {
+            // NOT: AI init async'tir. TickListener hemen baslar; ilk birkac tick AI
+            // client henuz baglanmadigi icin AICheck.onTick early-return eder (isClientAvailable=false).
+            // Bu kasitli: tick loop'un AI init'i bloklamasini istemiyoruz.
             aiClientProvider.initialize().thenAccept(success -> {
                 if (success) {
                     getLogger().info(aiClientProvider.getClientType() + ": Connected to " + config.getServerAddress());

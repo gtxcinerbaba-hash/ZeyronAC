@@ -397,9 +397,11 @@ public class HttpAIClient implements IAIClient {
             long backoffMs = INITIAL_BACKOFF_MS * (1L << attempt);
             logger.info("[HTTP] Retrying in " + backoffMs + "ms (attempt " + (attempt + 1) + "/" + MAX_RETRY_ATTEMPTS + ")");
             CompletableFuture<Boolean> future = new CompletableFuture<>();
+            // Min 1 tick garantisi — Bukkit runTaskLaterAsynchronously 0 delay'de exception atar.
+            long ticks = Math.max(1L, backoffMs / 50L);
             SchedulerManager.getAdapter().runAsyncDelayed(() -> {
                 connectWithRetry(attempt + 1).thenAccept(future::complete);
-            }, backoffMs / 50);
+            }, ticks);
             return future;
         });
     }
@@ -421,6 +423,9 @@ public class HttpAIClient implements IAIClient {
         limitExceeded = false;
         serverError.clear();
         inStasisMode.set(false);
+        // Backoff counter reset — reload sonrasi reconnect ilk denemeden baslamalidir
+        reconnectAttempts.set(0);
+        consecutiveNetworkFailures.set(0);
 
         return CompletableFuture.runAsync(() -> {
             logger.info("[HTTP] Disconnected from server");

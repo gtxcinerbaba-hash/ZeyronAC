@@ -90,20 +90,24 @@ public class TickListener {
         if (!usePerPlayerTasks) {
             return;
         }
-        if (playerTasks.containsKey(player.getUniqueId())) {
-            return;
-        }
 
         AIPlayerData data = aiCheck.getPlayerData(player.getUniqueId());
         if (data != null && data.isBedrock()) return;
 
-        try {
-            ScheduledTask task = SchedulerManager.getAdapter().runEntitySyncRepeating(player, () -> {
-                aiCheck.onTick(player);
-            }, 1L, 1L);
-            playerTasks.put(player.getUniqueId(), task);
-        } catch (Exception ignored) {
-        }
+        // computeIfAbsent: containsKey+put race'ini engelle (join event + tick ayni anda)
+        playerTasks.computeIfAbsent(player.getUniqueId(), uuid -> {
+            try {
+                return SchedulerManager.getAdapter().runEntitySyncRepeating(player, () -> {
+                    aiCheck.onTick(player);
+                }, 1L, 1L);
+            } catch (Exception ex) {
+                // Folia'da "removed player" exception'i burada olur. Logla ama crash etme.
+                org.bukkit.Bukkit.getLogger().fine("[ZeyronAC] startPlayerTask failed for " + player.getName() + ": " + ex.getMessage());
+                return null;
+            }
+        });
+        // computeIfAbsent null donerse map'te deger kalmaz, cikar
+        playerTasks.remove(player.getUniqueId(), null);
     }
 
     public void stopPlayerTask(Player player) {

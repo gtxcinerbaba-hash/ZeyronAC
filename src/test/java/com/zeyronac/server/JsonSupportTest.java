@@ -59,9 +59,10 @@ class JsonSupportTest {
 
     @Test
     void parseReadsProbabilityAndModel() {
-        AIResponse response = JsonSupport.parsePredictResponse("{\"probability\":0.9,\"model\":\"v2\"}");
+        // Whitelist: fast|pro|ultra|experimental (=M4 guvenlik sarti)
+        AIResponse response = JsonSupport.parsePredictResponse("{\"probability\":0.9,\"model\":\"pro\"}");
         assertEquals(0.9, response.getProbability(), 1e-9);
-        assertEquals("v2", response.getModel());
+        assertEquals("pro", response.getModel());
         assertNull(response.getError());
     }
 

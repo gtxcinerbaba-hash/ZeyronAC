@@ -39,7 +39,7 @@
 | :--- | :--- |
 | **Remote Processing** | All heavy calculations and AI evaluations run on an external analysis server to prevent game server lag. |
 | **FAST & PRO Models** | The FAST model handles instant detections, while the PRO model focuses on deep behavioral analysis. |
-| **Cross-Server Analysis** | Effortlessly share violator data and reputation points between all of your connected servers. |
+| **Cross-Server Analysis** | Share alert & punishment events between all connected servers via the backend. Each server streams violator data to the central hub; other servers poll and surface them in admin chat in real time. |
 | **Flexible Customization** | Easily tweak threshold parameters and actions to fit various game modes and servers. |
 
 ---

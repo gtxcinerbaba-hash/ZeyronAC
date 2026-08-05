@@ -169,9 +169,10 @@ public class AICheck {
             return;
         }
 
-        if (worldGuardCompat.shouldBypassAICheck(player)) {
-            return;
-        }
+        // WorldGuard kontrolu netty thread'inde GUVENLI DEGIL (player.getLocation).
+        // Simdilik netty'de location cagirmadan - eger bypass lazimsa main thread'de
+        // TickListener.onTick icinde kontrol edilecek. Burada skip etmiyoruz.
+        // (Bypass sonraki timestampta main-ticks uzerinden uygulanir.)
 
         data.processTick(yaw, pitch);
         data.incrementStepCounter();

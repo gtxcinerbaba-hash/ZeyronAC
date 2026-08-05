@@ -84,9 +84,11 @@ public class AIPlayerData {
     }
 
     public TickData processTick(float yaw, float pitch) {
-        TickData tickData = aimProcessor.process(yaw, pitch);
         lock.writeLock().lock();
         try {
+            // aimProcessor shared state tutuyor — rotation (netty) ve main thread'den
+            // parallel erisimi engellemek icin write lock icinde olmali.
+            TickData tickData = aimProcessor.process(yaw, pitch);
             if (tickBuffer.size() >= sequence) {
                 tickBuffer.pollFirst();
             }
@@ -95,10 +97,10 @@ public class AIPlayerData {
                 tickHistory.pollFirst();
             }
             tickHistory.addLast(tickData);
+            return tickData;
         } finally {
             lock.writeLock().unlock();
         }
-        return tickData;
     }
 
     public void onAttack() {

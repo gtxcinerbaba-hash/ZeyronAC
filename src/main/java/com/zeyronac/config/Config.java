@@ -351,7 +351,9 @@ public class Config {
                     if (onlyAlertForModel && ("pro".equalsIgnoreCase(modelKey) || "fast".equalsIgnoreCase(modelKey))) {
                         onlyAlertForModel = false;
                         modelSection.set("only-alert", false);
-                        plugin.saveConfig();
+                        // NOT: plugin.saveConfig() burada CAGIRILMAZ. Reload sirasinda
+                        // bu fonksiyon calistiginda saveConfig tum kullanici yorumlarini siler.
+                        // Bellekte normalize edilen deger sonraki dogal save'e kadar gecerli kalir.
                         if (logger != null) {
                             logger.info("[Config] Automatically set 'only-alert' to false for model " + modelKey);
                         }
