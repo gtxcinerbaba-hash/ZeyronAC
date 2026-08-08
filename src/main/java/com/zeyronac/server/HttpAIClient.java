@@ -167,9 +167,55 @@ public class HttpAIClient implements IAIClient {
                     if (key != null && !key.isEmpty()) {
                         builder.header("X-API-Key", key);
                     }
+
+                    // Client'in baglandigi gercek MC sunucu IP'si backend'e iletilsin.
+                    // Backend TRUSTED_PROXIES ile guvenilir proxy olarak tanirsa, X-Forwarded-For
+                    // uzerinden gercek client IP'sini alir; boylece allowed_ips dogru uygulanir.
+                    String mcServerIp = resolveMinecraftServerIp();
+                    if (mcServerIp != null && !mcServerIp.isEmpty()) {
+                        builder.header("X-Forwarded-For", mcServerIp);
+                    }
+
                     return chain.proceed(builder.build());
                 })
                 .build();
+    }
+
+    /**
+     * Minecraft sunucusunun genel IP'sini çozumle.
+     * 1) server.properties: server-ip veya query.port varyasyonlari
+     * 2) Bukkit.getServer().getIp() (API'deki exposed host)
+     * 3) Network interfaces uzerinden ilk non-loopback IPv4 bulunur
+     */
+    private static String resolveMinecraftServerIp() {
+        // 1) server.properties / Bukkit host
+        try {
+            String host = org.bukkit.Bukkit.getServer().getIp();
+            if (host != null && !host.isBlank() && !"0.0.0.0".equals(host) && !"::".equals(host)) {
+                return host.trim();
+            }
+        } catch (Throwable ignored) {
+        }
+
+        // 2) Network interfaces — ilk non-loopback public IPv4
+        try {
+            java.util.Enumeration<java.net.NetworkInterface> interfaces = java.net.NetworkInterface.getNetworkInterfaces();
+            while (interfaces != null && interfaces.hasMoreElements()) {
+                java.net.NetworkInterface ni = interfaces.nextElement();
+                if (!ni.isUp() || ni.isLoopback() || ni.isPointToPoint()) continue;
+                java.util.Enumeration<java.net.InetAddress> addrs = ni.getInetAddresses();
+                while (addrs.hasMoreElements()) {
+                    java.net.InetAddress addr = addrs.nextElement();
+                    if (addr instanceof java.net.Inet4Address && !addr.isLoopbackAddress() && !addr.isLinkLocalAddress()) {
+                        return addr.getHostAddress();
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+
+        // 3) empty — header set edilmeyecek
+        return null;
     }
 
     public Executor getExecutor() {
