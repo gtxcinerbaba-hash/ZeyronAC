@@ -156,11 +156,6 @@ public class AIClientProvider {
         return currentClient;
     }
 
-    /** PlayerListener icin: aktif client'i disa ac. */
-    public IAIClient getClient() {
-        return currentClient;
-    }
-
     public boolean isAvailable() {
         return currentClient != null && currentClient.isConnected();
     }

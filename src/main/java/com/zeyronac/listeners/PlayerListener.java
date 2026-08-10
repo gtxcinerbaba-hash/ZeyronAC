@@ -84,43 +84,6 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-
-        // ── ON-JOIN BAN CHECK ──
-        // Backend bans tablosunda aktif ban varsa kick et (sureli/kalici) ve Discord
-        // appeal linki goster. checkBan "banned" true donerse kick yapar.
-        if (plugin.getAiClientProvider() != null && plugin.getAiClientProvider().getClient() != null) {
-            plugin.getAiClientProvider().getClient()
-                    .checkBan(player.getUniqueId().toString())
-                    .thenAccept(banInfo -> {
-                        if (banInfo == null || !banInfo.has("banned") || !banInfo.get("banned").getAsBoolean()) {
-                            return; // oyuncu temiz — kick yok
-                        }
-                        // Ban var. player.isOnline() async thread'ten kontrol edilir.
-                        plugin.getServer().getScheduler().runTask(plugin, () -> {
-                            if (!player.isOnline()) return;
-                            String reason = banInfo.has("reason") && !banInfo.get("reason").isJsonNull()
-                                    ? banInfo.get("reason").getAsString()
-                                    : "Cheat detected";
-                            Integer daysRemaining = null;
-                            if (banInfo.has("days_remaining") && !banInfo.get("days_remaining").isJsonNull()) {
-                                try { daysRemaining = banInfo.get("days_remaining").getAsInt(); } catch (Exception ignored) {}
-                            }
-                            String durationText = (daysRemaining != null && daysRemaining > 0)
-                                    ? daysRemaining + " day" + (daysRemaining == 1 ? "" : "s") + " remaining"
-                                    : null;
-                            String discord = banInfo.has("discord_invite") && !banInfo.get("discord_invite").isJsonNull()
-                                    ? banInfo.get("discord_invite").getAsString()
-                                    : "";
-                            kickForBan(player, reason, durationText, discord);
-                        });
-                    })
-                    .exceptionally(err -> {
-                        // fail-open: ban check hatasi oyuncuyu etkilemez
-                        plugin.getLogger().fine("on-join ban-check failed for " + player.getName() + ": " + err.getMessage());
-                        return null;
-                    });
-        }
-
         if (plugin.getAiClientProvider() != null) {
             plugin.getAiClientProvider().handlePlayerJoin(player.getUniqueId());
         }
@@ -167,28 +130,6 @@ public class PlayerListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerKick(PlayerKickEvent event) {
         handlePlayerLeave(event.getPlayer());
-    }
-
-    /**
-     * Ban efekti: oyuncuyu kick et ve ban ekrani goster (sure + sebep + appeal).
-     */
-    private void kickForBan(Player player, String reason, String durationText, String discordInvite) {
-        StringBuilder msg = new StringBuilder();
-        msg.append("§c§l⛔ YOU ARE BANNED\n");
-        msg.append("§r\n");
-        msg.append("§7Reason: §f").append(reason).append("\n");
-        if (durationText != null && !durationText.isEmpty()) {
-            msg.append("§7Duration: §e").append(durationText).append("\n");
-        } else {
-            msg.append("§7Duration: §cPermanent\n");
-        }
-        msg.append("§r\n");
-        if (discordInvite != null && !discordInvite.isEmpty()) {
-            msg.append("§7Appeal at: §b").append(discordInvite).append("\n");
-            msg.append("§r\n");
-        }
-        msg.append("§8ZeyronAC Protection");
-        player.kickPlayer(msg.toString());
     }
 
     private void handlePlayerLeave(Player player) {

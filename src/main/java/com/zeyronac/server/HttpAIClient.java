@@ -226,68 +226,6 @@ public class HttpAIClient implements IAIClient {
         return RequestBody.create(JSON, json.toString());
     }
 
-    // -----------------------------------------------------------------------
-    // POST /api/v1/ban-check  — Oyuncu sunucuya baglanirken ban kontrolu.
-    // Basarili yanitta {"banned": true|false, "reason": "...", "days_remaining": N}
-    // doner. Hata durumunda (timeout, 5xx, 503) null doner ve caller
-    // "fail-open" davranir (oyuncuyu banlamaz). Ban kritik bir islem oldugundan
-    // false-positive riskini azaltmak icin sadece acik "banned=true" yanitinda
-    // aksiyon alinir.
-    // -----------------------------------------------------------------------
-    public CompletableFuture<com.google.gson.JsonObject> checkBan(String playerUuid) {
-        CompletableFuture<com.google.gson.JsonObject> future = new CompletableFuture<>();
-        if (shuttingDown.get() || !connected.get()) {
-            future.complete(null);
-            return future;
-        }
-
-        String url = serverAddress + "/api/v1/ban-check";
-        JsonObject body = new JsonObject();
-        body.addProperty("player_uuid", playerUuid);
-        // Not: Auth zaten OkHttp interceptor'da ekleniyor (X-API-Key header).
-        // License key yoksa backend 401 donecek ve biz null return edecegiz.
-        Request request = new Request.Builder()
-                .url(url)
-                .post(jsonBody(body))
-                .build();
-
-        httpClient.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override
-            public void onFailure(okhttp3.Call call, IOException e) {
-                if (debug) {
-                    logger.fine("[BAN-CHECK] network failure for " + playerUuid + ": " + e.getMessage());
-                }
-                future.complete(null);
-            }
-
-            @Override
-            public void onResponse(okhttp3.Call call, okhttp3.Response response) throws IOException {
-                try (response) {
-                    if (!response.isSuccessful()) {
-                        if (debug) {
-                            logger.fine("[BAN-CHECK] HTTP " + response.code() + " for " + playerUuid);
-                        }
-                        future.complete(null);
-                        return;
-                    }
-                    String responseBody = response.body() != null ? response.body().string() : "";
-                    if (responseBody.isEmpty()) {
-                        future.complete(null);
-                        return;
-                    }
-                    JsonObject parsed = new JsonParser().parse(responseBody).getAsJsonObject();
-                    future.complete(parsed);
-                } catch (Exception e) {
-                    if (debug) {
-                        logger.log(Level.FINE, "[BAN-CHECK] parse error for " + playerUuid, e);
-                    }
-                    future.complete(null);
-                }
-            }
-        });
-        return future;
-    }
-
     private void handleApiWarnings(String responseBody) {
         if (responseBody == null || responseBody.isEmpty()) {
             return;
