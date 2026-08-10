@@ -31,6 +31,15 @@ package com.zeyronac.server;
 import java.util.concurrent.CompletableFuture;
 
 public interface IAIClient {
+    /**
+     * Bir oyuncunun backend'de aktif ban kaydi olup olmadigini kontrol eder.
+     * Donen JSON: {"banned":false} veya {"banned":true,"reason":"...","daysLeft":N,...}
+     * Hata durumunda (API offline, lisans hatasi vb.) null doner ve oyuncu icin ban bloklamasi yapmaz.
+     */
+    default CompletableFuture<com.google.gson.JsonObject> checkBan(String playerUuid) {
+        return CompletableFuture.completedFuture(null);
+    }
+
     CompletableFuture<Boolean> connect();
 
     CompletableFuture<Boolean> connectWithRetry();
