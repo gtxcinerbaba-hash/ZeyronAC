@@ -168,12 +168,13 @@ public class HttpAIClient implements IAIClient {
                         builder.header("X-API-Key", key);
                     }
 
-                    // Client'in baglandigi gercek MC sunucu IP'si backend'e iletilsin.
-                    // Backend TRUSTED_PROXIES ile guvenilir proxy olarak tanirsa, X-Forwarded-For
-                    // uzerinden gercek client IP'sini alir; boylece allowed_ips dogru uygulanir.
-                    String mcServerIp = resolveMinecraftServerIp();
+                    // Plugin'in calistigi Minecraft hostunun public IP'sini ayri bir
+                    // uygulama header'i olarak gonder. X-Forwarded-For proxy zinciri icindir;
+                    // plugin'in bunu set etmesi backend/proxy IP'sinin gercek IP sanilmasina
+                    // neden oluyordu.
+                    String mcServerIp = payloads.advertisedServerIp();
                     if (mcServerIp != null && !mcServerIp.isEmpty()) {
-                        builder.header("X-Forwarded-For", mcServerIp);
+                        builder.header("X-Zeyron-Server-IP", mcServerIp);
                     }
 
                     return chain.proceed(builder.build());

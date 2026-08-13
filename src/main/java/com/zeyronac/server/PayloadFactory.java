@@ -148,14 +148,8 @@ final class PayloadFactory {
      * real public IP. The returned value is validated as a real IPv4/IPv6 literal (prevents log
      * injection and fake-IP bypass). The result is cached for 5 minutes to limit lookups.
      */
-    private String advertisedServerIp() {
-        // Try Bukkit configured IP first - if set to a real address, use it.
-        String bukkitIp = plugin.getServer().getIp();
-        if (bukkitIp != null && !bukkitIp.trim().isEmpty()
-                && !bukkitIp.equals("0.0.0.0") && !bukkitIp.equals("0:0:0:0:0:0:0:0")) {
-            return bukkitIp.trim();
-        }
-
+    /** Public egress IP advertised by the Minecraft host. */
+    String advertisedServerIp() {
         // Use cached public IP if fresh
         long now = System.currentTimeMillis();
         if (cachedPublicIp != null && (now - lastIpFetchTime) < IP_CACHE_TTL_MS) {
@@ -172,7 +166,16 @@ final class PayloadFactory {
             }
         }
 
-        // All services failed; return unknown (last known IP if any, otherwise unknown).
+        // Echo services failed. Use Bukkit's configured address only as a fallback;
+        // it may be a stale/internal value and must never override the public lookup.
+        String bukkitIp = plugin.getServer().getIp();
+        if (bukkitIp != null && !bukkitIp.trim().isEmpty()
+                && !bukkitIp.equals("0.0.0.0") && !bukkitIp.equals("0:0:0:0:0:0:0:0")
+                && isIpLiteral(bukkitIp.trim())) {
+            return bukkitIp.trim();
+        }
+
+        // All services failed; return the last known public IP, otherwise unknown.
         return cachedPublicIp != null ? cachedPublicIp : "unknown";
     }
 
