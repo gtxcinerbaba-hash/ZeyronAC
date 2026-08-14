@@ -39,10 +39,12 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.zeyronac.util.AimProcessor;
 import com.zeyronac.util.BufferCalculator;
+import com.zeyronac.util.SnapDetector;
 
 public class AIPlayerData {
     private final UUID playerId;
     private final AimProcessor aimProcessor;
+    private final SnapDetector snapDetector;
     private final Deque<TickData> tickBuffer;
     private final Deque<Double> probabilityHistory;
     private final Deque<ModelProbabilityEntry> modelProbabilityHistory;
@@ -56,6 +58,7 @@ public class AIPlayerData {
     private volatile double lastProbability;
     private volatile boolean isBedrock;
     private volatile int highProbabilityDetections;
+    private volatile boolean lastSnapSignal;
     private final Deque<TickData> tickHistory = new ArrayDeque<>(5000);
     private static final int MAX_TICK_HISTORY = 5000;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -69,6 +72,7 @@ public class AIPlayerData {
         this.playerId = playerId;
         this.sequence = sequence;
         this.aimProcessor = new AimProcessor();
+        this.snapDetector = new SnapDetector();
         this.tickBuffer = new ArrayDeque<>(sequence);
         this.probabilityHistory = new ArrayDeque<>(10);
         this.modelProbabilityHistory = new ArrayDeque<>(10);
@@ -81,9 +85,14 @@ public class AIPlayerData {
         this.lastProbability = 0.0;
         this.isBedrock = false;
         this.highProbabilityDetections = 0;
+        this.lastSnapSignal = false;
     }
 
     public TickData processTick(float yaw, float pitch) {
+        return processTick(yaw, pitch, true);
+    }
+
+    public TickData processTick(float yaw, float pitch, boolean snapEligible) {
         lock.writeLock().lock();
         try {
             // aimProcessor shared state tutuyor — rotation (netty) ve main thread'den
@@ -97,6 +106,7 @@ public class AIPlayerData {
                 tickHistory.pollFirst();
             }
             tickHistory.addLast(tickData);
+            lastSnapSignal = snapDetector.record(tickData, snapEligible && isInCombatUnsafe());
             return tickData;
         } finally {
             lock.writeLock().unlock();
@@ -117,6 +127,8 @@ public class AIPlayerData {
         try {
             aimProcessor.reset();
             clearBuffer();
+            snapDetector.reset();
+            lastSnapSignal = false;
         } finally {
             lock.writeLock().unlock();
         }
@@ -190,8 +202,10 @@ public class AIPlayerData {
             lastProbabilitiesByModel.clear();
             probabilityHistoryByModel.clear();
             aimProcessor.reset();
+            snapDetector.reset();
             ticksSinceAttack = sequence + 1;
             ticksStep = 0;
+            lastSnapSignal = false;
             bufferThresholdLatched.clear();
         } finally {
             lock.writeLock().unlock();
@@ -240,6 +254,21 @@ public class AIPlayerData {
         } finally {
             lock.readLock().unlock();
         }
+    }
+
+    public boolean consumeSnapSignal() {
+        lock.writeLock().lock();
+        try {
+            boolean signal = lastSnapSignal;
+            lastSnapSignal = false;
+            return signal;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    private boolean isInCombatUnsafe() {
+        return ticksSinceAttack <= sequence;
     }
 
     public void updateBuffer(double probability, double multiplier, double decreaseAmount, double threshold, double decreaseThreshold) {

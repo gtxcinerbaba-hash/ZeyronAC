@@ -174,7 +174,18 @@ public class AICheck {
         // TickListener.onTick icinde kontrol edilecek. Burada skip etmiyoruz.
         // (Bypass sonraki timestampta main-ticks uzerinden uygulanir.)
 
-        data.processTick(yaw, pitch);
+        boolean snapEligible = true;
+        try {
+            // Elytra rotation is intentionally excluded from this first check.
+            snapEligible = !player.isGliding();
+        } catch (Throwable ignored) {
+            // If the platform cannot answer safely, keep the existing AI path alive.
+        }
+        data.processTick(yaw, pitch, snapEligible);
+        if (data.consumeSnapSignal()) {
+            plugin.debug("[SNAP-SHADOW] Repeated rotation jump observed for " + player.getName()
+                    + " (logging only; no punishment)");
+        }
         data.incrementStepCounter();
         if (data.shouldSendData(step, sequence)) {
             sendDataToAI(player, data);
