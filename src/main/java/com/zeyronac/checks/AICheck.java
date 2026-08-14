@@ -186,6 +186,10 @@ public class AICheck {
             plugin.debug("[SNAP-SHADOW] Repeated rotation jump observed for " + player.getName()
                     + " (logging only; no punishment)");
         }
+        if (data.consumeRotationEvidenceSignal()) {
+            plugin.debug("[ROTATION-SHADOW] Combined rotation evidence observed for " + player.getName()
+                    + " (logging only; no punishment)");
+        }
         data.incrementStepCounter();
         if (data.shouldSendData(step, sequence)) {
             sendDataToAI(player, data);

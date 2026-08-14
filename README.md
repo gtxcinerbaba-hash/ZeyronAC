@@ -103,6 +103,7 @@ The main command is `/zeyronac`, which also has the aliases `/zr` and `/zron`.
 
 ZeyronAC is inspired by and derived from:
 - **[SoMax1soft](https://github.com/SoMax1soft)** and the **MLSAC Team** — For the original development of the **MLSAC** project, which served as the core blueprint and foundation for ZeyronAC's networking and bridge plugin structure.
+- **[KaelusAI](https://github.com/KaelusAI)** and the **[Shard](https://github.com/KaelusAI/Shard)** contributors — For the open-source AI anti-cheat architecture and behavioral monitoring ideas that informed ZeyronAC's rotation telemetry and shadow-analysis workflow. ZeyronAC's implementation is independent and does not copy Shard source code.
 
 ---
 
@@ -111,3 +112,4 @@ ZeyronAC is inspired by and derived from:
 This project is licensed under the GNU General Public License v3.0.
 
 The project includes software distributed under GPLv3 and contains components derived from open-source projects licensed under compatible terms.
+See `NOTICE` for third-party attribution and source references.

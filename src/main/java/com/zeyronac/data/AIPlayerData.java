@@ -40,11 +40,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import com.zeyronac.util.AimProcessor;
 import com.zeyronac.util.BufferCalculator;
 import com.zeyronac.util.SnapDetector;
+import com.zeyronac.util.RotationEvidenceDetector;
 
 public class AIPlayerData {
     private final UUID playerId;
     private final AimProcessor aimProcessor;
     private final SnapDetector snapDetector;
+    private final RotationEvidenceDetector rotationEvidenceDetector;
     private final Deque<TickData> tickBuffer;
     private final Deque<Double> probabilityHistory;
     private final Deque<ModelProbabilityEntry> modelProbabilityHistory;
@@ -59,6 +61,7 @@ public class AIPlayerData {
     private volatile boolean isBedrock;
     private volatile int highProbabilityDetections;
     private volatile boolean lastSnapSignal;
+    private volatile boolean lastRotationEvidenceSignal;
     private final Deque<TickData> tickHistory = new ArrayDeque<>(5000);
     private static final int MAX_TICK_HISTORY = 5000;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -73,6 +76,7 @@ public class AIPlayerData {
         this.sequence = sequence;
         this.aimProcessor = new AimProcessor();
         this.snapDetector = new SnapDetector();
+        this.rotationEvidenceDetector = new RotationEvidenceDetector();
         this.tickBuffer = new ArrayDeque<>(sequence);
         this.probabilityHistory = new ArrayDeque<>(10);
         this.modelProbabilityHistory = new ArrayDeque<>(10);
@@ -86,6 +90,7 @@ public class AIPlayerData {
         this.isBedrock = false;
         this.highProbabilityDetections = 0;
         this.lastSnapSignal = false;
+        this.lastRotationEvidenceSignal = false;
     }
 
     public TickData processTick(float yaw, float pitch) {
@@ -107,6 +112,8 @@ public class AIPlayerData {
             }
             tickHistory.addLast(tickData);
             lastSnapSignal = snapDetector.record(tickData, snapEligible && isInCombatUnsafe());
+            lastRotationEvidenceSignal = rotationEvidenceDetector.record(
+                    tickData, snapEligible && isInCombatUnsafe());
             return tickData;
         } finally {
             lock.writeLock().unlock();
@@ -128,7 +135,9 @@ public class AIPlayerData {
             aimProcessor.reset();
             clearBuffer();
             snapDetector.reset();
+            rotationEvidenceDetector.reset();
             lastSnapSignal = false;
+            lastRotationEvidenceSignal = false;
         } finally {
             lock.writeLock().unlock();
         }
@@ -203,9 +212,11 @@ public class AIPlayerData {
             probabilityHistoryByModel.clear();
             aimProcessor.reset();
             snapDetector.reset();
+            rotationEvidenceDetector.reset();
             ticksSinceAttack = sequence + 1;
             ticksStep = 0;
             lastSnapSignal = false;
+            lastRotationEvidenceSignal = false;
             bufferThresholdLatched.clear();
         } finally {
             lock.writeLock().unlock();
@@ -261,6 +272,17 @@ public class AIPlayerData {
         try {
             boolean signal = lastSnapSignal;
             lastSnapSignal = false;
+            return signal;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    public boolean consumeRotationEvidenceSignal() {
+        lock.writeLock().lock();
+        try {
+            boolean signal = lastRotationEvidenceSignal;
+            lastRotationEvidenceSignal = false;
             return signal;
         } finally {
             lock.writeLock().unlock();

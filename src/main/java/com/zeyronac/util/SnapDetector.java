@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2026 ZeyronAC Team
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * Design inspiration: Shard (GPLv3), https://github.com/KaelusAI/Shard
+ * This file is an independent ZeyronAC implementation; no Shard source
+ * code is copied into this file.
+ */
+
 package com.zeyronac.util;
 
 import com.zeyronac.data.TickData;

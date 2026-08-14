@@ -1,0 +1,22 @@
+ZeyronAC third-party notices
+============================
+
+ZeyronAC is distributed under the GNU General Public License v3.0. See
+LICENSE for the complete license text.
+
+Shard
+-----
+Project: https://github.com/KaelusAI/Shard
+License: GNU General Public License v3.0
+
+The ZeyronAC rotation telemetry and shadow-analysis workflow is informed by
+Shard's public anti-cheat architecture and monitoring approach. No Shard
+source code is copied in the implementation covered by this notice.
+
+Other project notices
+---------------------
+MLSAC: https://github.com/SoMax1soft/mls-network-plugin
+Grim:  https://github.com/GrimAnticheat/Grim
+
+Where a source file contains a more specific derived-work header, that header
+controls the attribution for that file.
