@@ -45,8 +45,9 @@ public interface ISessionManager {
     Collection<DataSession> getActiveSessions();
     int getActiveSessionCount();
     String getCurrentSessionFolder();
-    void onAttack(Player player);
+    void onAttack(Player player, Player target);
     void onTick(Player player, float yaw, float pitch);
+    void updateRecordContexts();
 
     /**
      * Oyuncu sunucudan ayrildiginda cagrilir. Aktif kayit varsa 5 dakikalik

@@ -51,7 +51,7 @@ public class DataSession {
     private final String playerName;
     private final Label label;
     private final String comment;
-    private final Queue<TickData> recordedTicks;
+    private final Queue<RecordedTickData> recordedTicks;
     private final Instant startTime;
     private final AimProcessor aimProcessor;
     private int ticksSinceAttack;
@@ -71,11 +71,15 @@ public class DataSession {
         this.ticksSinceAttack = COMBAT_TIMEOUT;
     }
     public void processTick(float yaw, float pitch) {
+        processTick(yaw, pitch, new RecordContext(false, 0, 0, -1, false, false, false, false));
+    }
+
+    public void processTick(float yaw, float pitch, RecordContext context) {
         lock.writeLock().lock();
         try {
             TickData tickData = aimProcessor.process(yaw, pitch);
             if (ticksSinceAttack < COMBAT_TIMEOUT) {
-                recordedTicks.add(tickData);
+                recordedTicks.add(new RecordedTickData(tickData, context, yaw, pitch, ticksSinceAttack));
             }
             ticksSinceAttack++;
         } finally {
@@ -148,15 +152,15 @@ public class DataSession {
                 return "";
             }
             StringBuilder sb = new StringBuilder();
-            sb.append(TickData.getHeader()).append("\n");
+            sb.append(RecordedTickData.getHeader()).append("\n");
             String cheatingStatus = "UNLABELED";
             if (label == Label.CHEAT) {
                 cheatingStatus = "CHEAT";
             } else if (label == Label.LEGIT) {
                 cheatingStatus = "LEGIT";
             }
-            List<TickData> ticks = new ArrayList<>(recordedTicks);
-            for (TickData tick : ticks) {
+            List<RecordedTickData> ticks = new ArrayList<>(recordedTicks);
+            for (RecordedTickData tick : ticks) {
                 sb.append(tick.toCsv(cheatingStatus)).append("\n");
             }
             return sb.toString();

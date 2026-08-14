@@ -112,7 +112,7 @@ public class HitListener extends PacketListenerAbstract {
             if (aiCheck != null) {
                 aiCheck.onAttack(attacker, target);
             }
-            sessionManager.onAttack(attacker);
+            sessionManager.onAttack(attacker, target);
         } catch (Exception e) {
         }
     }

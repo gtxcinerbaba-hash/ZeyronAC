@@ -76,6 +76,7 @@ public class TickListener {
 
     private void onTick() {
         int currentTick = tickHandler.getCurrentTick();
+        sessionManager.updateRecordContexts();
         if (hitListener != null) {
             hitListener.setCurrentTick(currentTick);
         }

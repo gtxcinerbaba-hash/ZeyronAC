@@ -33,6 +33,7 @@ import org.bukkit.Bukkit;
 import com.zeyronac.Main;
 import com.zeyronac.config.Label;
 import com.zeyronac.data.DataSession;
+import com.zeyronac.data.RecordContext;
 import com.zeyronac.scheduler.ScheduledTask;
 import com.zeyronac.scheduler.SchedulerManager;
 import com.zeyronac.util.AimProcessor;
@@ -54,12 +55,16 @@ public class SessionManager implements ISessionManager {
     private final Map<UUID, DataSession> activeSessions;
     private final Map<UUID, AimProcessor> playerAimProcessors;
     private final Map<UUID, ScheduledTask> disconnectTimers;
+    private final Map<UUID, UUID> recordTargets;
+    private final Map<UUID, RecordContext> recordContexts;
     private final Main plugin;
     private volatile String currentSessionFolder = null;
     public SessionManager(Main plugin) {
         this.activeSessions = new ConcurrentHashMap<>();
         this.playerAimProcessors = new ConcurrentHashMap<>();
         this.disconnectTimers = new ConcurrentHashMap<>();
+        this.recordTargets = new ConcurrentHashMap<>();
+        this.recordContexts = new ConcurrentHashMap<>();
         this.plugin = plugin;
     }
     public AimProcessor getOrCreateAimProcessor(UUID playerId) {
@@ -78,6 +83,7 @@ public class SessionManager implements ISessionManager {
         // Geri sayim varsa iptal et (oyuncu geri geldi, yeni egitim baslatiliyor).
         cancelDisconnectTimer(playerId);
         AimProcessor aimProcessor = getOrCreateAimProcessor(playerId);
+        aimProcessor.reset();
         DataSession session = new DataSession(
             playerId,
             player.getName(),
@@ -98,6 +104,8 @@ public class SessionManager implements ISessionManager {
     public void stopSession(UUID playerId) {
         cancelDisconnectTimer(playerId);
         DataSession session = activeSessions.remove(playerId);
+        recordTargets.remove(playerId);
+        recordContexts.remove(playerId);
         if (session != null) {
             try {
                 session.saveAndClose(plugin, currentSessionFolder);
@@ -147,17 +155,50 @@ public class SessionManager implements ISessionManager {
         return currentSessionFolder;
     }
     @Override
-    public void onAttack(Player player) {
+    public void onAttack(Player player, Player target) {
         DataSession session = activeSessions.get(player.getUniqueId());
         if (session != null) {
+            recordTargets.put(player.getUniqueId(), target.getUniqueId());
             session.onAttack();
+        }
+    }
+
+    @Override
+    public void updateRecordContexts() {
+        if (activeSessions.isEmpty()) return;
+        for (DataSession session : activeSessions.values()) {
+            Player attacker = Bukkit.getPlayer(session.getUuid());
+            if (attacker == null || !attacker.isOnline()) continue;
+            UUID targetId = recordTargets.get(session.getUuid());
+            RecordContext.PlayerState playerState = new RecordContext.PlayerState(
+                    attacker.isOnGround(), attacker.isGliding());
+            Player target = targetId == null ? null : Bukkit.getPlayer(targetId);
+            if (target == null || !target.isOnline()) {
+                recordContexts.put(session.getUuid(), RecordContext.empty(playerState));
+                continue;
+            }
+            org.bukkit.Location from = attacker.getEyeLocation();
+            org.bukkit.Location to = target.getEyeLocation();
+            double dx = to.getX() - from.getX();
+            double dy = to.getY() - from.getY();
+            double dz = to.getZ() - from.getZ();
+            double horizontal = Math.sqrt(dx * dx + dz * dz);
+            float targetYaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
+            float targetPitch = (float) Math.toDegrees(Math.atan2(-dy, horizontal));
+            float distance = (float) from.distance(to);
+            recordContexts.put(session.getUuid(), new RecordContext(
+                    true, targetYaw, targetPitch, distance,
+                    playerState.onGround, target.isOnGround(),
+                    playerState.gliding, target.isGliding()));
         }
     }
     @Override
     public void onTick(Player player, float yaw, float pitch) {
         DataSession session = activeSessions.get(player.getUniqueId());
         if (session != null) {
-            session.processTick(yaw, pitch);
+            session.processTick(yaw, pitch, recordContexts.getOrDefault(
+                    player.getUniqueId(), new RecordContext(false, 0, 0, -1,
+                            player.isOnGround(), false, player.isGliding(), false)));
         }
     }
     /**
