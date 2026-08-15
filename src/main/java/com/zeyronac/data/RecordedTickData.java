@@ -30,14 +30,12 @@ public final class RecordedTickData {
     }
 
     public static String getHeader() {
-        return TickData.getHeader().replace("gcd_error_pitch", "gcd_error_pitch")
-            + ",target_present,target_yaw_error,target_pitch_error,target_distance"
-            + ",player_on_ground,target_on_ground,player_gliding,target_gliding,attack_age";
+        return TickData.getHeader();
     }
 
     public String toCsv(String status) {
         StringJoiner joiner = new StringJoiner(",");
-        joiner.add(rotation.toCsv(status));
+        joiner.add(rotation.toBaseCsv(status));
         if (!context.targetPresent) {
             joiner.add("0").add("-1").add("-1").add("-1");
         } else {

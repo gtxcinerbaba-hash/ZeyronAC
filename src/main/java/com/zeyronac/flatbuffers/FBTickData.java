@@ -31,7 +31,7 @@ package com.zeyronac.flatbuffers;
 import com.google.flatbuffers.FlatBufferBuilder;
 public final class FBTickData {
     public static void startFBTickData(FlatBufferBuilder builder) {
-        builder.startTable(6);
+        builder.startTable(15);
     }
     public static void addDeltaYaw(FlatBufferBuilder builder, float deltaYaw) {
         builder.addFloat(0, deltaYaw, 0.0f);
@@ -50,6 +50,33 @@ public final class FBTickData {
     }
     public static void addJerkPitch(FlatBufferBuilder builder, float jerkPitch) {
         builder.addFloat(5, jerkPitch, 0.0f);
+    }
+    public static void addTargetPresent(FlatBufferBuilder builder, float value) {
+        builder.addFloat(6, value, 0.0f);
+    }
+    public static void addTargetYawError(FlatBufferBuilder builder, float value) {
+        builder.addFloat(7, value, -1.0f);
+    }
+    public static void addTargetPitchError(FlatBufferBuilder builder, float value) {
+        builder.addFloat(8, value, -1.0f);
+    }
+    public static void addTargetDistance(FlatBufferBuilder builder, float value) {
+        builder.addFloat(9, value, -1.0f);
+    }
+    public static void addPlayerOnGround(FlatBufferBuilder builder, float value) {
+        builder.addFloat(10, value, 0.0f);
+    }
+    public static void addTargetOnGround(FlatBufferBuilder builder, float value) {
+        builder.addFloat(11, value, 0.0f);
+    }
+    public static void addPlayerGliding(FlatBufferBuilder builder, float value) {
+        builder.addFloat(12, value, 0.0f);
+    }
+    public static void addTargetGliding(FlatBufferBuilder builder, float value) {
+        builder.addFloat(13, value, 0.0f);
+    }
+    public static void addAttackAge(FlatBufferBuilder builder, float value) {
+        builder.addFloat(14, value, -1.0f);
     }
     public static int endFBTickData(FlatBufferBuilder builder) {
         return builder.endTable();

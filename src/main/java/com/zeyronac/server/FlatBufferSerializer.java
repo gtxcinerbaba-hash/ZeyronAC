@@ -50,6 +50,15 @@ public class FlatBufferSerializer {
             FBTickData.addAccelPitch(builder, tick.accelPitch);
             FBTickData.addJerkYaw(builder, tick.jerkYaw);
             FBTickData.addJerkPitch(builder, tick.jerkPitch);
+            FBTickData.addTargetPresent(builder, tick.targetPresent);
+            FBTickData.addTargetYawError(builder, tick.targetYawError);
+            FBTickData.addTargetPitchError(builder, tick.targetPitchError);
+            FBTickData.addTargetDistance(builder, tick.targetDistance);
+            FBTickData.addPlayerOnGround(builder, tick.playerOnGround);
+            FBTickData.addTargetOnGround(builder, tick.targetOnGround);
+            FBTickData.addPlayerGliding(builder, tick.playerGliding);
+            FBTickData.addTargetGliding(builder, tick.targetGliding);
+            FBTickData.addAttackAge(builder, tick.attackAge);
             tickOffsets[i] = FBTickData.endFBTickData(builder);
         }
         int ticksVector = FBTickDataSequence.createTicksVector(builder, tickOffsets);

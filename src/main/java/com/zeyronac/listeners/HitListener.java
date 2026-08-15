@@ -113,6 +113,12 @@ public class HitListener extends PacketListenerAbstract {
             if (target == null) {
                 return;
             }
+            if (aiCheck != null && aiCheck.consumePendingHitCancel(attacker)) {
+                event.setCancelled(true);
+                plugin.getLogger().fine("[HitCancel] Cancelled a hit for " + attacker.getName()
+                        + " after a detection alert.");
+                return;
+            }
             if (aiCheck != null) {
                 aiCheck.onAttack(attacker, target);
             }

@@ -207,6 +207,10 @@ alert-responses:
     # A separate alert still fires when VL increments (see alert-format-vl in messages.yml).
     buffer-step-percent: 0.33
 
+  hit-cancel:
+    # Cancel the next attack after a detection alert is logged. Disabled by default.
+    enabled: false
+
   damage-reduction:
     enabled: true # Reduce the flagged player's outgoing damage. Independent of the troll system.
     # `buffer` is the absolute buffer value that activates the stage (compare with violation.threshold).
@@ -271,4 +275,3 @@ folia:
   # Use region-specific schedulers for location-based tasks
   region-scheduler: # Do not change!
     enabled: true
-

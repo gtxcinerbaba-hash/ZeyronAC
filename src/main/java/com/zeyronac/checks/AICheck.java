@@ -51,6 +51,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 public class AICheck {
@@ -63,6 +64,7 @@ public class AICheck {
     private final Logger logger;
     private final SchedulerAdapter schedulerAdapter;
     private final Map<UUID, AIPlayerData> playerData;
+    private final Map<UUID, AtomicBoolean> pendingHitCancels;
     private volatile Config config;
     private WorldGuardCompat worldGuardCompat;
     private volatile int sequence;
@@ -79,6 +81,7 @@ public class AICheck {
         this.logger = plugin.getLogger();
         this.schedulerAdapter = SchedulerManager.getAdapter();
         this.playerData = new ConcurrentHashMap<>();
+        this.pendingHitCancels = new ConcurrentHashMap<>();
         this.sequence = config.getAiSequence();
         this.step = config.getAiStep();
         this.worldGuardCompat = new WorldGuardCompat(
@@ -122,7 +125,7 @@ public class AICheck {
             data.getAimProcessor().reset();
             plugin.debug("[AI] New combat started for " + player.getName() + ", cleared old data");
         }
-        data.onAttack();
+        data.onAttack(((Player) target).getUniqueId());
         plugin.debug("[AI] Attack registered for " + player.getName() +
                 ", buffer=" + data.getBufferSize() + "/" + sequence);
     }
@@ -150,6 +153,7 @@ public class AICheck {
         if (data.isBedrock())
             return;
 
+        data.updateRecordContext(player);
         data.incrementTicksSinceAttack();
         if (data.getTicksSinceAttack() > sequence) {
             if (data.getBufferSize() > 0) {
@@ -325,6 +329,9 @@ public class AICheck {
         }
 
         if (anyFired) {
+            if (config.isHitCancelEnabled()) {
+                pendingHitCancels.computeIfAbsent(playerUuid, ignored -> new AtomicBoolean()).set(true);
+            }
             if (plugin.getDailyStats() != null) {
                 plugin.getDailyStats().incrementDetections();
             }
@@ -406,15 +413,31 @@ public class AICheck {
 
     public void handlePlayerQuit(Player player) {
         if (player != null) {
-            playerData.remove(player.getUniqueId());
+            UUID playerId = player.getUniqueId();
+            playerData.remove(playerId);
+            pendingHitCancels.remove(playerId);
             if (worldGuardCompat != null) {
-                worldGuardCompat.clearCache(player.getUniqueId());
+                worldGuardCompat.clearCache(playerId);
             }
         }
     }
 
+    /** Consume the one-shot hit cancellation armed by the latest detection alert. */
+    public boolean consumePendingHitCancel(Player player) {
+        if (player == null || !config.isHitCancelEnabled()) {
+            return false;
+        }
+        AtomicBoolean pending = pendingHitCancels.get(player.getUniqueId());
+        if (pending == null || !pending.compareAndSet(true, false)) {
+            return false;
+        }
+        pendingHitCancels.remove(player.getUniqueId(), pending);
+        return true;
+    }
+
     public void clearAll() {
         playerData.clear();
+        pendingHitCancels.clear();
     }
 
     public int getSequence() {

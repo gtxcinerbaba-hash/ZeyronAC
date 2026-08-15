@@ -88,6 +88,7 @@ public class Config {
     private final Map<String, String> modelNames;
     private final Map<String, Boolean> modelOnlyAlert;
     private final boolean alertResponsesEnabled;
+    private final boolean hitCancelEnabled;
     private final double aiAlertBufferStepPercent;
     private final boolean damageReductionEnabled;
     private final List<DamageReductionStage> damageReductionStages;
@@ -142,6 +143,7 @@ public class Config {
     public static final boolean DEFAULT_FOLIA_ENTITY_SCHEDULER_ENABLED = true;
     public static final boolean DEFAULT_FOLIA_REGION_SCHEDULER_ENABLED = true;
     public static final boolean DEFAULT_ALERT_RESPONSES_ENABLED = true;
+    public static final boolean DEFAULT_HIT_CANCEL_ENABLED = false;
     public static final double DEFAULT_AI_ALERT_BUFFER_STEP_PERCENT = 0.33;
 
     public Config() {
@@ -198,6 +200,7 @@ public class Config {
         this.modelNames = new HashMap<>();
         this.modelOnlyAlert = new HashMap<>();
         this.alertResponsesEnabled = DEFAULT_ALERT_RESPONSES_ENABLED;
+        this.hitCancelEnabled = DEFAULT_HIT_CANCEL_ENABLED;
         this.aiAlertBufferStepPercent = DEFAULT_AI_ALERT_BUFFER_STEP_PERCENT;
         this.damageReductionEnabled = true;
         this.damageReductionStages = createDefaultDamageReductionStages();
@@ -373,6 +376,7 @@ public class Config {
 
 
         this.alertResponsesEnabled = config.getBoolean("alert-responses.enabled", DEFAULT_ALERT_RESPONSES_ENABLED);
+        this.hitCancelEnabled = config.getBoolean("alert-responses.hit-cancel.enabled", DEFAULT_HIT_CANCEL_ENABLED);
         double stepPercent = config.getDouble("alert-responses.alerts.buffer-step-percent",
                 DEFAULT_AI_ALERT_BUFFER_STEP_PERCENT);
         if (stepPercent <= 0.0 || stepPercent > 1.0) {
@@ -744,6 +748,10 @@ public class Config {
 
     public boolean isAlertResponsesEnabled() {
         return alertResponsesEnabled;
+    }
+
+    public boolean isHitCancelEnabled() {
+        return hitCancelEnabled;
     }
 
     public boolean isDamageReductionEnabled() {

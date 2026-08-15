@@ -39,6 +39,15 @@ public final class TickData {
     public final float jerkPitch;
     public final float gcdErrorYaw;
     public final float gcdErrorPitch;
+    public final float targetPresent;
+    public final float targetYawError;
+    public final float targetPitchError;
+    public final float targetDistance;
+    public final float playerOnGround;
+    public final float targetOnGround;
+    public final float playerGliding;
+    public final float targetGliding;
+    public final float attackAge;
     public TickData(float deltaYaw, float deltaPitch, 
                     float accelYaw, float accelPitch,
                     float jerkYaw, float jerkPitch,
@@ -51,12 +60,73 @@ public final class TickData {
         this.jerkPitch = jerkPitch;
         this.gcdErrorYaw = gcdErrorYaw;
         this.gcdErrorPitch = gcdErrorPitch;
+        this.targetPresent = 0.0f;
+        this.targetYawError = -1.0f;
+        this.targetPitchError = -1.0f;
+        this.targetDistance = -1.0f;
+        this.playerOnGround = 0.0f;
+        this.targetOnGround = 0.0f;
+        this.playerGliding = 0.0f;
+        this.targetGliding = 0.0f;
+        this.attackAge = -1.0f;
+    }
+
+    public TickData withRecordContext(RecordContext context, float yaw, float pitch, int attackAge) {
+        if (context == null) return this;
+        float yawError = context.targetPresent ? angleError(yaw, context.targetYaw) : -1.0f;
+        float pitchError = context.targetPresent ? Math.abs(pitch - context.targetPitch) : -1.0f;
+        return new TickData(this, context, yawError, pitchError, attackAge);
+    }
+
+    private TickData(TickData base, RecordContext context,
+                     float yawError, float pitchError, int attackAge) {
+        this.deltaYaw = base.deltaYaw;
+        this.deltaPitch = base.deltaPitch;
+        this.accelYaw = base.accelYaw;
+        this.accelPitch = base.accelPitch;
+        this.jerkYaw = base.jerkYaw;
+        this.jerkPitch = base.jerkPitch;
+        this.gcdErrorYaw = base.gcdErrorYaw;
+        this.gcdErrorPitch = base.gcdErrorPitch;
+        this.targetPresent = context.targetPresent ? 1.0f : 0.0f;
+        this.targetYawError = yawError;
+        this.targetPitchError = pitchError;
+        this.targetDistance = context.targetDistance;
+        this.playerOnGround = context.playerOnGround ? 1.0f : 0.0f;
+        this.targetOnGround = context.targetOnGround ? 1.0f : 0.0f;
+        this.playerGliding = context.playerGliding ? 1.0f : 0.0f;
+        this.targetGliding = context.targetGliding ? 1.0f : 0.0f;
+        this.attackAge = attackAge;
+    }
+
+    private static float angleError(float current, float target) {
+        float delta = current - target;
+        while (delta > 180.0f) delta -= 360.0f;
+        while (delta < -180.0f) delta += 360.0f;
+        return Math.abs(delta);
     }
     public static String getHeader() {
         return "is_cheating,delta_yaw,delta_pitch,accel_yaw,accel_pitch,jerk_yaw,jerk_pitch,"
-            + "gcd_error_yaw,gcd_error_pitch";
+            + "gcd_error_yaw,gcd_error_pitch,target_present,target_yaw_error,target_pitch_error,"
+            + "target_distance,player_on_ground,target_on_ground,player_gliding,target_gliding,attack_age";
     }
     public String toCsv(String status) {
+        int cheatingStatus = status.equalsIgnoreCase("CHEAT") ? 1 : 0;
+        StringJoiner joiner = new StringJoiner(",");
+        joiner.add(toBaseCsv(status));
+        joiner.add(String.format(Locale.US, "%.6f", targetPresent));
+        joiner.add(String.format(Locale.US, "%.6f", targetYawError));
+        joiner.add(String.format(Locale.US, "%.6f", targetPitchError));
+        joiner.add(String.format(Locale.US, "%.6f", targetDistance));
+        joiner.add(String.format(Locale.US, "%.6f", playerOnGround));
+        joiner.add(String.format(Locale.US, "%.6f", targetOnGround));
+        joiner.add(String.format(Locale.US, "%.6f", playerGliding));
+        joiner.add(String.format(Locale.US, "%.6f", targetGliding));
+        joiner.add(String.format(Locale.US, "%.6f", attackAge));
+        return joiner.toString();
+    }
+
+    public String toBaseCsv(String status) {
         int cheatingStatus = status.equalsIgnoreCase("CHEAT") ? 1 : 0;
         StringJoiner joiner = new StringJoiner(",");
         joiner.add(String.valueOf(cheatingStatus));

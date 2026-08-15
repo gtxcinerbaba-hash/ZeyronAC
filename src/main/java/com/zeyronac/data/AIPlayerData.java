@@ -37,6 +37,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import com.zeyronac.util.AimProcessor;
 import com.zeyronac.util.BufferCalculator;
 import com.zeyronac.util.SnapDetector;
@@ -62,6 +64,9 @@ public class AIPlayerData {
     private volatile int highProbabilityDetections;
     private volatile boolean lastSnapSignal;
     private volatile boolean lastRotationEvidenceSignal;
+    private volatile UUID targetId;
+    private volatile RecordContext recordContext = new RecordContext(
+            false, 0, 0, -1, false, false, false, false);
     private final Deque<TickData> tickHistory = new ArrayDeque<>(5000);
     private static final int MAX_TICK_HISTORY = 5000;
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
@@ -98,11 +103,17 @@ public class AIPlayerData {
     }
 
     public TickData processTick(float yaw, float pitch, boolean snapEligible) {
+        return processTick(yaw, pitch, snapEligible, recordContext);
+    }
+
+    public TickData processTick(float yaw, float pitch, boolean snapEligible,
+                                RecordContext context) {
         lock.writeLock().lock();
         try {
             // aimProcessor shared state tutuyor — rotation (netty) ve main thread'den
             // parallel erisimi engellemek icin write lock icinde olmali.
-            TickData tickData = aimProcessor.process(yaw, pitch);
+            TickData tickData = aimProcessor.process(yaw, pitch)
+                    .withRecordContext(context, yaw, pitch, ticksSinceAttack);
             if (tickBuffer.size() >= sequence) {
                 tickBuffer.pollFirst();
             }
@@ -120,19 +131,29 @@ public class AIPlayerData {
         }
     }
 
-    public void onAttack() {
+    public void onAttack(UUID targetId) {
         lock.writeLock().lock();
         try {
+            this.targetId = targetId;
             this.ticksSinceAttack = 0;
         } finally {
             lock.writeLock().unlock();
         }
     }
 
+    /** Main-thread snapshot; rotation packets only consume the immutable result. */
+    public void updateRecordContext(Player attacker) {
+        UUID currentTarget = targetId;
+        Player target = currentTarget == null ? null : Bukkit.getPlayer(currentTarget);
+        recordContext = RecordContext.capture(attacker, target);
+    }
+
     public void onTeleport() {
         lock.writeLock().lock();
         try {
             aimProcessor.reset();
+            targetId = null;
+            recordContext = new RecordContext(false, 0, 0, -1, false, false, false, false);
             clearBuffer();
             snapDetector.reset();
             rotationEvidenceDetector.reset();
