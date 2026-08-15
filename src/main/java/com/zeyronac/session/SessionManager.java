@@ -173,7 +173,11 @@ public class SessionManager implements ISessionManager {
             RecordContext.PlayerState playerState = new RecordContext.PlayerState(
                     attacker.isOnGround(), attacker.isGliding());
             Player target = targetId == null ? null : Bukkit.getPlayer(targetId);
-            if (target == null || !target.isOnline()) {
+            // Bukkit Location#distance cannot compare locations from different worlds.
+            // Cross-world targets are not meaningful for aim context, so record them
+            // as absent instead of throwing once per server tick.
+            if (target == null || !target.isOnline()
+                    || !attacker.getWorld().equals(target.getWorld())) {
                 recordContexts.put(session.getUuid(), RecordContext.empty(playerState));
                 continue;
             }
@@ -185,7 +189,7 @@ public class SessionManager implements ISessionManager {
             double horizontal = Math.sqrt(dx * dx + dz * dz);
             float targetYaw = (float) Math.toDegrees(Math.atan2(-dx, dz));
             float targetPitch = (float) Math.toDegrees(Math.atan2(-dy, horizontal));
-            float distance = (float) from.distance(to);
+            float distance = (float) Math.sqrt(dx * dx + dy * dy + dz * dz);
             recordContexts.put(session.getUuid(), new RecordContext(
                     true, targetYaw, targetPitch, distance,
                     playerState.onGround, target.isOnGround(),
