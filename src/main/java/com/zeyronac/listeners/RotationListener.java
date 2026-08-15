@@ -37,6 +37,8 @@ import com.github.retrooper.packetevents.wrapper.play.client.WrapperPlayClientPl
 import com.zeyronac.checks.AICheck;
 import com.zeyronac.session.ISessionManager;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import com.zeyronac.util.PluginErrorNotifier;
 
 import java.util.Map;
 import java.util.UUID;
@@ -45,13 +47,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RotationListener extends PacketListenerAbstract {
     private static final double DUPLICATE_POSITION_THRESHOLD_SQUARED = 1.0E-7D * 1.0E-7D;
 
+    private final JavaPlugin plugin;
     private final ISessionManager sessionManager;
     private final AICheck aiCheck;
     private final Map<UUID, Vector3d> lastPositionByPlayer = new ConcurrentHashMap<>();
     private final Map<UUID, Boolean> lastOnGroundByPlayer = new ConcurrentHashMap<>();
 
-    public RotationListener(ISessionManager sessionManager, AICheck aiCheck) {
+    public RotationListener(JavaPlugin plugin, ISessionManager sessionManager, AICheck aiCheck) {
         super(PacketListenerPriority.MONITOR);
+        this.plugin = plugin;
         this.sessionManager = sessionManager;
         this.aiCheck = aiCheck;
     }
@@ -89,6 +93,7 @@ public class RotationListener extends PacketListenerAbstract {
                 sessionManager.onTick(player, yaw, pitch);
             }
         } catch (Exception e) {
+            PluginErrorNotifier.report(plugin, "Failed to process a rotation packet.", e);
         }
     }
 

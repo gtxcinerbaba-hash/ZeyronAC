@@ -34,6 +34,7 @@ import com.zeyronac.scheduler.ScheduledTask;
 import com.zeyronac.scheduler.SchedulerManager;
 import com.zeyronac.scheduler.ServerType;
 import com.zeyronac.session.ISessionManager;
+import com.zeyronac.util.PluginErrorNotifier;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,6 +45,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TickListener {
+    private final JavaPlugin plugin;
     private final ISessionManager sessionManager;
     private final AICheck aiCheck;
     private final EventCompat.TickHandler tickHandler;
@@ -52,6 +54,7 @@ public class TickListener {
     private HitListener hitListener;
 
     public TickListener(JavaPlugin plugin, ISessionManager sessionManager, AICheck aiCheck) {
+        this.plugin = plugin;
         this.sessionManager = sessionManager;
         this.aiCheck = aiCheck;
         this.tickHandler = EventCompat.createTickHandler(plugin, this::onTick);
@@ -76,7 +79,12 @@ public class TickListener {
 
     private void onTick() {
         int currentTick = tickHandler.getCurrentTick();
-        sessionManager.updateRecordContexts();
+        try {
+            sessionManager.updateRecordContexts();
+        } catch (Throwable error) {
+            PluginErrorNotifier.report(plugin,
+                    "Failed to update record context snapshots.", error);
+        }
         if (hitListener != null) {
             hitListener.setCurrentTick(currentTick);
         }

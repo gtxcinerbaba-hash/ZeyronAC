@@ -37,6 +37,7 @@ import com.zeyronac.data.RecordContext;
 import com.zeyronac.scheduler.ScheduledTask;
 import com.zeyronac.scheduler.SchedulerManager;
 import com.zeyronac.util.AimProcessor;
+import com.zeyronac.util.PluginErrorNotifier;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -112,6 +113,8 @@ public class SessionManager implements ISessionManager {
             } catch (IOException e) {
                 plugin.getLogger().log(Level.SEVERE,
                     "Failed to save session for " + session.getPlayerName(), e);
+                PluginErrorNotifier.report(plugin,
+                    "Failed to save recorded data for " + session.getPlayerName() + ".", e);
             }
         }
     }
@@ -233,6 +236,8 @@ public class SessionManager implements ISessionManager {
                     } catch (IOException e) {
                         plugin.getLogger().log(Level.SEVERE,
                             "Failed to save session for " + session.getPlayerName(), e);
+                        PluginErrorNotifier.report(plugin,
+                            "Failed to save recorded data for " + session.getPlayerName() + ".", e);
                     }
                 }
             }

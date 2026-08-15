@@ -162,8 +162,8 @@ public final class Main extends JavaPlugin {
             });
         }
         this.tickListener = new TickListener(this, sessionManager, aiCheck);
-        this.hitListener = new HitListener(sessionManager, aiCheck);
-        this.rotationListener = new RotationListener(sessionManager, aiCheck);
+        this.hitListener = new HitListener(this, sessionManager, aiCheck);
+        this.rotationListener = new RotationListener(this, sessionManager, aiCheck);
         this.dailyStats = new DailyStats(this);
         this.dailyStats.initialize();
         this.playerListener = new PlayerListener(this, aiCheck, alertManager, violationManager,

@@ -38,17 +38,21 @@ import com.zeyronac.checks.AICheck;
 import com.zeyronac.session.ISessionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
+import com.zeyronac.util.PluginErrorNotifier;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class HitListener extends PacketListenerAbstract {
+    private final JavaPlugin plugin;
     private final ISessionManager sessionManager;
     private final AICheck aiCheck;
     private final Map<Integer, UUID> playerIdCache = new ConcurrentHashMap<>();
 
-    public HitListener(ISessionManager sessionManager, AICheck aiCheck) {
+    public HitListener(JavaPlugin plugin, ISessionManager sessionManager, AICheck aiCheck) {
         super(PacketListenerPriority.MONITOR);
+        this.plugin = plugin;
         this.sessionManager = sessionManager;
         this.aiCheck = aiCheck;
     }
@@ -114,6 +118,7 @@ public class HitListener extends PacketListenerAbstract {
             }
             sessionManager.onAttack(attacker, target);
         } catch (Exception e) {
+            PluginErrorNotifier.report(plugin, "Failed to process an attack packet.", e);
         }
     }
 
