@@ -51,6 +51,7 @@ public final class ConfigSyncUtil {
                     "detection.api-key",
                     "detection.enabled",
                     "detection.endpoint",
+                    "detection.direct-model-endpoint",
                     "detection.license-key",
                     "server-identity.server-name",
                     "server-identity.server-port",

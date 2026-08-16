@@ -32,6 +32,11 @@ detection:
   
   # AI server endpoint
   endpoint: "https://api.zeyronac.com"
+
+  # Optional: send only prediction requests directly to the selected model host.
+  # Keep empty to use the backend for all requests. The backend remains responsible
+  # for init, heartbeat, events and license administration.
+  direct-model-endpoint: ""
   
   # API key for authentication
   # To buy API key visit https://zeyronac.com

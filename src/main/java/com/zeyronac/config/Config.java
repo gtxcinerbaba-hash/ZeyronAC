@@ -70,6 +70,7 @@ public class Config {
     private final String autostartLabel;
     private final String autostartComment;
     private final String serverAddress;
+    private final String directModelAddress;
     private final String serverIdentityName;
     private final String serverIdentityFamily;
     private final boolean interServerEnabled;
@@ -126,6 +127,7 @@ public class Config {
     public static final String DEFAULT_AUTOSTART_LABEL = "UNLABELED";
     public static final String DEFAULT_AUTOSTART_COMMENT = "";
     public static final String DEFAULT_SERVER_ADDRESS = "https://api.zeyronac.com/api/v1";
+    public static final String DEFAULT_DIRECT_MODEL_ADDRESS = "";
     public static final String DEFAULT_LICENSE_KEY = "";
     public static final String DEFAULT_SERVER_IDENTITY_NAME = "default";
     public static final String DEFAULT_SERVER_IDENTITY_FAMILY = "default";
@@ -182,6 +184,7 @@ public class Config {
         this.autostartLabel = DEFAULT_AUTOSTART_LABEL;
         this.autostartComment = DEFAULT_AUTOSTART_COMMENT;
         this.serverAddress = DEFAULT_SERVER_ADDRESS;
+        this.directModelAddress = DEFAULT_DIRECT_MODEL_ADDRESS;
         this.serverIdentityName = DEFAULT_SERVER_IDENTITY_NAME;
         this.serverIdentityFamily = DEFAULT_SERVER_IDENTITY_FAMILY;
         this.interServerEnabled = DEFAULT_INTERSERVER_ENABLED;
@@ -318,6 +321,8 @@ public class Config {
         this.autostartComment = config.getString("autostart.comment", DEFAULT_AUTOSTART_COMMENT);
         this.serverAddress = config.getString("detection.endpoint",
                 config.getString("ai.server", DEFAULT_SERVER_ADDRESS));
+        this.directModelAddress = config.getString("detection.direct-model-endpoint",
+                DEFAULT_DIRECT_MODEL_ADDRESS);
         this.serverIdentityName = config.getString("server-identity.name", DEFAULT_SERVER_IDENTITY_NAME);
         this.serverIdentityFamily = config.getString("server-identity.family", DEFAULT_SERVER_IDENTITY_FAMILY);
         this.interServerEnabled = config.getBoolean("server-identity.interserver.enabled",
@@ -670,6 +675,11 @@ public class Config {
 
     public String getServerAddress() {
         return serverAddress;
+    }
+
+    /** Optional low-latency model endpoint; empty keeps inference on the backend. */
+    public String getDirectModelAddress() {
+        return directModelAddress;
     }
 
     public String getServerIdentityName() {

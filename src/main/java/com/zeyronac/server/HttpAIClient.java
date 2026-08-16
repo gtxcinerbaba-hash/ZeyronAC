@@ -77,6 +77,7 @@ public class HttpAIClient implements IAIClient {
 
     private final Main plugin;
     private final String serverAddress;
+    private final String directModelAddress;
     private final Logger logger;
     private final boolean debug;
     private final PayloadFactory payloads;
@@ -111,15 +112,25 @@ public class HttpAIClient implements IAIClient {
     public HttpAIClient(Main plugin, String serverAddress,
                         IntSupplier onlinePlayersSupplier, boolean debug) {
         this(plugin, serverAddress, onlinePlayersSupplier, debug,
-                "default", "default", false, true, 0.75);
+                "default", "default", false, true, 0.75, "");
     }
 
     public HttpAIClient(Main plugin, String serverAddress,
                         IntSupplier onlinePlayersSupplier, boolean debug,
                         String serverName, String serverFamily, boolean interServerEnabled,
                         boolean eventReportingEnabled, double apiAlertEventThreshold) {
+        this(plugin, serverAddress, onlinePlayersSupplier, debug, serverName, serverFamily,
+                interServerEnabled, eventReportingEnabled, apiAlertEventThreshold, "");
+    }
+
+    public HttpAIClient(Main plugin, String serverAddress,
+                        IntSupplier onlinePlayersSupplier, boolean debug,
+                        String serverName, String serverFamily, boolean interServerEnabled,
+                        boolean eventReportingEnabled, double apiAlertEventThreshold,
+                        String directModelAddress) {
         this.plugin = plugin;
         this.serverAddress = serverAddress;
+        this.directModelAddress = directModelAddress == null ? "" : directModelAddress.trim();
         this.logger = plugin.getLogger();
         this.debug = debug;
         // C1: Lisans anahtari (X-API-Key) ve oyuncu verisi cleartext gidemez.
@@ -137,6 +148,14 @@ public class HttpAIClient implements IAIClient {
             } else if (lower.startsWith("http://")) {
                 logger.warning("[HTTP] AI backend uses http:// to a loopback host - acceptable for local dev only.");
             }
+        }
+        if (!this.directModelAddress.isEmpty()
+                && this.directModelAddress.toLowerCase(Locale.ROOT).startsWith("http://")
+                && !this.directModelAddress.toLowerCase(Locale.ROOT).contains("localhost")
+                && !this.directModelAddress.toLowerCase(Locale.ROOT).contains("127.0.0.1")
+                && !this.directModelAddress.toLowerCase(Locale.ROOT).contains("[::1]")) {
+            throw new IllegalArgumentException(
+                    "[HTTP] Direct model endpoint must use https:// for a remote host.");
         }
         this.payloads = new PayloadFactory(plugin, serverName, serverFamily,
                 interServerEnabled, onlinePlayersSupplier);
@@ -771,7 +790,8 @@ public class HttpAIClient implements IAIClient {
 
     private void executeStreamingPredict(JsonObject json,
             io.reactivex.rxjava3.core.ObservableEmitter<AIResponse> emitter) throws IOException {
-        String url = serverAddress + "/api/v1/predict-stream";
+        String predictionAddress = directModelAddress.isEmpty() ? serverAddress : directModelAddress;
+        String url = predictionAddress + "/api/v1/predict-stream";
         Request request = new Request.Builder()
                 .url(url)
                 .post(jsonBody(json))

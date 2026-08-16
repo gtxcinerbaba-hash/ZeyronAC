@@ -110,7 +110,8 @@ public class AIClientProvider {
                 config.getServerIdentityFamily(),
                 config.isInterServerEnabled(),
                 config.isApiEventReportingEnabled(),
-                config.getApiAlertEventThreshold());
+                config.getApiAlertEventThreshold(),
+                config.getDirectModelAddress());
         this.currentClient = httpClient;
         this.clientType = "HTTP";
         logger.info("[HTTP] Connecting to " + serverAddress + "...");
