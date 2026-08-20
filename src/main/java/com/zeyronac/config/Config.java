@@ -112,7 +112,7 @@ public class Config {
     public static final double DEFAULT_AI_BUFFER_DECREASE_THRESHOLD = 0.10;
     public static final boolean DEFAULT_ANIMATION_ENABLED = true;
     public static final String DEFAULT_ANIMATION_TYPE = "classic_ban";
-    public static final int DEFAULT_AI_SEQUENCE = 40;
+    public static final int DEFAULT_AI_SEQUENCE = 50;
     public static final int DEFAULT_AI_STEP = 10;
 
     public static final boolean DEFAULT_LITEBANS_ENABLED = false;

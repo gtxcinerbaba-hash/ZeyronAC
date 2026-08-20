@@ -64,6 +64,8 @@ public class AIPlayerData {
     private volatile int highProbabilityDetections;
     private volatile boolean lastSnapSignal;
     private volatile boolean lastRotationEvidenceSignal;
+    /** Monotonically increasing prediction generation; stale responses must not mutate VL. */
+    private long latestInferenceId;
     private volatile UUID targetId;
     private volatile RecordContext recordContext = new RecordContext(
             false, 0, 0, -1, false, false, false, false);
@@ -96,6 +98,7 @@ public class AIPlayerData {
         this.highProbabilityDetections = 0;
         this.lastSnapSignal = false;
         this.lastRotationEvidenceSignal = false;
+        this.latestInferenceId = 0L;
     }
 
     public TickData processTick(float yaw, float pitch) {
@@ -217,8 +220,29 @@ public class AIPlayerData {
         lock.writeLock().lock();
         try {
             tickBuffer.clear();
+            latestInferenceId++;
         } finally {
             lock.writeLock().unlock();
+        }
+    }
+
+    /** Start a prediction and return its generation for response ordering. */
+    public long beginInference() {
+        lock.writeLock().lock();
+        try {
+            return ++latestInferenceId;
+        } finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    /** Only the newest request for this player may update the violation buffer. */
+    public boolean isCurrentInference(long inferenceId) {
+        lock.readLock().lock();
+        try {
+            return inferenceId == latestInferenceId;
+        } finally {
+            lock.readLock().unlock();
         }
     }
 
@@ -239,6 +263,7 @@ public class AIPlayerData {
             lastSnapSignal = false;
             lastRotationEvidenceSignal = false;
             bufferThresholdLatched.clear();
+            latestInferenceId++;
         } finally {
             lock.writeLock().unlock();
         }
@@ -252,6 +277,7 @@ public class AIPlayerData {
             ticksSinceAttack = this.sequence + 1;
             ticksStep = 0;
             aimProcessor.reset();
+            latestInferenceId++;
         } finally {
             lock.writeLock().unlock();
         }

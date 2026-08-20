@@ -44,7 +44,7 @@ detection:
 
   # Number of ticks to collect per sample
   # Do not change unless you know what you are doing
-  sample-size: 40 # Do not change!
+  sample-size: 50 # Must match the PRO model window contract
   
   # Interval between samples (in ticks)
   # Do not change unless you know what you are doing

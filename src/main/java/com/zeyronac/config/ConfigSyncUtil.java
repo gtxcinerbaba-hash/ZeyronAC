@@ -255,6 +255,14 @@ public final class ConfigSyncUtil {
                 YamlConfiguration defaults = YamlConfiguration
                         .loadConfiguration(new InputStreamReader(inputStream, StandardCharsets.UTF_8));
                 boolean changed = copyMissing(config, defaults, "");
+                // The PRO model contract is 50 ticks. Older bundled configs used 40;
+                // migrate only that known default so custom settings are not overwritten.
+                if (config.getInt("detection.sample-size", Config.DEFAULT_AI_SEQUENCE) == 40) {
+                    config.set("detection.sample-size", Config.DEFAULT_AI_SEQUENCE);
+                    changed = true;
+                    plugin.getLogger().info("Updated detection.sample-size from 40 to "
+                            + Config.DEFAULT_AI_SEQUENCE + " for the current model contract");
+                }
                 if (changed) {
                     config.save(configFile);
                     plugin.getLogger().info("Added missing entries to " + resourceName);

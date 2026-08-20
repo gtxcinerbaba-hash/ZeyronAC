@@ -223,6 +223,7 @@ public class AICheck {
             final Player playerRef = player;
             final UUID playerUuid = player.getUniqueId();
             final String playerName = player.getName();
+            final long inferenceId = data.beginInference();
             
             // Increment request counter
             if (plugin.getDailyStats() != null) {
@@ -231,7 +232,7 @@ public class AICheck {
             
             client.predict(serialized, playerUuid.toString(), playerName)
                     .subscribe(response -> {
-                        processResponse(playerRef, playerUuid, playerName, data, response);
+                        processResponse(playerRef, playerUuid, playerName, data, inferenceId, response);
                     }, error -> {
                         handleError(playerName, error);
                     });
@@ -268,7 +269,12 @@ public class AICheck {
         return true;
     }
 
-    private void processResponse(Player playerRef, UUID playerUuid, String playerName, AIPlayerData data, AIResponse response) {
+    private void processResponse(Player playerRef, UUID playerUuid, String playerName, AIPlayerData data,
+            long inferenceId, AIResponse response) {
+        if (!data.isCurrentInference(inferenceId)) {
+            plugin.debug("[AI] Ignoring stale response for " + playerName + " (request=" + inferenceId + ")");
+            return;
+        }
         if (response.getError() != null && response.getError().contains("INVALID_SEQUENCE")) {
             handleInvalidSequence(response.getError());
             return;

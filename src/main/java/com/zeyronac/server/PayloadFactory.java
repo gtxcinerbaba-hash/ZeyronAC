@@ -46,6 +46,10 @@ import java.util.logging.Logger;
  * "base payload + session + online count" boilerplate at every call site.
  */
 final class PayloadFactory {
+    /** Versioned contract for the 15-field FBTickData schema. */
+    static final int DATA_SCHEMA_VERSION = 2;
+    static final int DATA_FEATURE_COUNT = 15;
+
     private final Main plugin;
     private final String serverName;
     private final String serverFamily;
@@ -94,6 +98,8 @@ final class PayloadFactory {
         json.addProperty("serverIp", advertisedServerIp());
         json.addProperty("serverPort", plugin.getServer().getPort());
         json.addProperty("interServer", interServerEnabled);
+        json.addProperty("dataSchemaVersion", DATA_SCHEMA_VERSION);
+        json.addProperty("featureCount", DATA_FEATURE_COUNT);
         return json;
     }
 
